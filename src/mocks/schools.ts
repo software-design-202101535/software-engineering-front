@@ -1,7 +1,9 @@
-export const MOCK_SCHOOLS = [
-  '서울중학교',
-  '강남중학교',
-  '서초중학교',
-  '마포중학교',
-  '송파중학교',
+import type { SchoolType } from '@/types'
+
+export const SCHOOLS: { value: SchoolType; label: string }[] = [
+  { value: 'SUNRIN_HIGH_SCHOOL', label: '선린고등학교' },
+  { value: 'HANGUK_MIDDLE_SCHOOL', label: '한국중학교' },
+  { value: 'SEOUL_HIGH_SCHOOL', label: '서울고등학교' },
+  { value: 'INCHEON_MIDDLE_SCHOOL', label: '인천중학교' },
+  { value: 'BUSAN_HIGH_SCHOOL', label: '부산고등학교' },
 ]

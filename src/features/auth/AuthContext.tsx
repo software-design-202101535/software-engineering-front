@@ -15,19 +15,18 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(() => {
-    const saved = localStorage.getItem('user')
-    return {
-      user: saved ? (JSON.parse(saved) as User) : null,
-      isAuthenticated: !!saved,
-    }
-  })
+  export function AuthProvider({ children }: { children: ReactNode }) {
+    const [state, setState] = useState<AuthState>(() => {
+      const saved = localStorage.getItem('user')
+      return {
+        user: saved ? (JSON.parse(saved) as User) : null,
+        isAuthenticated: !!saved,
+      }
+    })
 
   const login = useCallback(async (data: LoginRequest) => {
     const res = await loginApi(data)
     setAccessToken(res.accessToken)
-    localStorage.setItem('refreshToken', res.refreshToken)
     localStorage.setItem('user', JSON.stringify(res.user))
     setState({ user: res.user, isAuthenticated: true })
   }, [])
@@ -35,7 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await logoutApi()
     setAccessToken(null)
-    localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
     setState({ user: null, isAuthenticated: false })
   }, [])
