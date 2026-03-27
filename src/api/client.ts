@@ -1,18 +1,24 @@
-import axios from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
 
-// Access Token은 메모리에 저장 (CLAUDE.md 명세)
-let accessToken: string | null = null
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+let accessToken: string | null = localStorage.getItem('accessToken')
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token
+  if (token) {
+    localStorage.setItem('accessToken', token)
+  } else {
+    localStorage.removeItem('accessToken')
+  }
 }
 
 export const getAccessToken = () => accessToken
 
 export const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080',
+  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // Refresh Token 쿠키
+  withCredentials: true,
 })
 
 client.interceptors.request.use((config) => {
@@ -22,6 +28,23 @@ client.interceptors.request.use((config) => {
   return config
 })
 
+async function handleTokenRefresh(originalRequest: InternalAxiosRequestConfig) {
+  const { data } = await axios.post(
+    `${BASE_URL}/api/auth/refresh`,
+    null,
+    { withCredentials: true },
+  )
+  setAccessToken(data.accessToken)
+  originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+  return client(originalRequest)
+}
+
+function handleAuthFailure() {
+  setAccessToken(null)
+  localStorage.removeItem('user')
+  window.location.href = '/login'
+}
+
 client.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -29,19 +52,9 @@ client.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       try {
-        const refreshToken = localStorage.getItem('refreshToken')
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'}/api/auth/refresh`,
-          { refreshToken },
-        )
-        setAccessToken(data.accessToken)
-        localStorage.setItem('refreshToken', data.refreshToken)
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
-        return client(originalRequest)
+        return await handleTokenRefresh(originalRequest)
       } catch {
-        setAccessToken(null)
-        localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        handleAuthFailure()
       }
     }
     return Promise.reject(error)

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import { MOCK_SCHOOLS } from '@/mocks'
+import { SCHOOLS } from '@/mocks'
+import { registerTeacher, registerStudent, registerParent } from '@/api/auth'
+import type { SchoolType } from '@/types'
 
 type SignupRole = 'teacher' | 'student' | 'parent'
 
@@ -19,19 +21,107 @@ const SELECT_CLASS =
 
 const LABEL_CLASS = 'block text-[0.75rem] font-semibold text-on-surface-variant uppercase tracking-wider ml-1'
 
+interface FormFields {
+  name: string
+  email: string
+  password: string
+  passwordConfirm: string
+  school: SchoolType | ''
+  schoolNumber: string
+  grade: string
+  classNum: string
+  number: string
+  childSchool: SchoolType | ''
+  childSchoolNumber: string
+}
+
+const INITIAL_FIELDS: FormFields = {
+  name: '',
+  email: '',
+  password: '',
+  passwordConfirm: '',
+  school: '',
+  schoolNumber: '',
+  grade: '',
+  classNum: '',
+  number: '',
+  childSchool: '',
+  childSchoolNumber: '',
+}
 
 export function SignupPage() {
   const { role = 'teacher' } = useParams<{ role: SignupRole }>()
   const activeRole = (role as SignupRole) || 'teacher'
   const navigate = useNavigate()
+
+  const [fields, setFields] = useState<FormFields>(INITIAL_FIELDS)
   const [termsChecked, setTermsChecked] = useState(false)
   const [privacyChecked, setPrivacyChecked] = useState(false)
+  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const setField = (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFields((prev) => ({ ...prev, [key]: e.target.value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 실제 서버 연동 시 API 호출로 교체
-    alert('회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.')
-    navigate('/login')
+    setError('')
+    setFieldErrors({})
+
+    if (fields.password !== fields.passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      if (activeRole === 'teacher') {
+        await registerTeacher({
+          email: fields.email,
+          password: fields.password,
+          name: fields.name,
+          school: fields.school as SchoolType,
+          schoolNumber: fields.schoolNumber,
+          ...(fields.grade ? { grade: Number(fields.grade) } : {}),
+          ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
+          termsAgreed: termsChecked,
+          privacyAgreed: privacyChecked,
+        })
+      } else if (activeRole === 'student') {
+        await registerStudent({
+          email: fields.email,
+          password: fields.password,
+          name: fields.name,
+          school: fields.school as SchoolType,
+          schoolNumber: fields.schoolNumber,
+          ...(fields.grade ? { grade: Number(fields.grade) } : {}),
+          ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
+          ...(fields.number ? { number: Number(fields.number) } : {}),
+          termsAgreed: termsChecked,
+          privacyAgreed: privacyChecked,
+        })
+      } else {
+        await registerParent({
+          email: fields.email,
+          password: fields.password,
+          name: fields.name,
+          childSchool: fields.childSchool as SchoolType,
+          childSchoolNumber: fields.childSchoolNumber,
+          termsAgreed: termsChecked,
+          privacyAgreed: privacyChecked,
+        })
+      }
+      navigate('/login')
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string> } } }
+      const data = axiosErr.response?.data
+      if (data?.errors) setFieldErrors(data.errors)
+      setError(data?.message ?? '회원가입에 실패했습니다.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -71,10 +161,10 @@ export function SignupPage() {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {activeRole === 'teacher' && <TeacherForm />}
-              {activeRole === 'student' && <StudentForm />}
-              {activeRole === 'parent' && <ParentForm />}
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              {activeRole === 'teacher' && <TeacherForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
+              {activeRole === 'student' && <StudentForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
+              {activeRole === 'parent' && <ParentForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
 
               {/* Terms */}
               <div className="space-y-3 pt-2">
@@ -85,7 +175,6 @@ export function SignupPage() {
                       checked={termsChecked}
                       onChange={(e) => setTermsChecked(e.target.checked)}
                       className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
-                      required
                     />
                     <span className="text-sm text-on-surface-variant">[필수] 이용약관에 동의합니다</span>
                   </label>
@@ -98,7 +187,6 @@ export function SignupPage() {
                       checked={privacyChecked}
                       onChange={(e) => setPrivacyChecked(e.target.checked)}
                       className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
-                      required
                     />
                     <span className="text-sm text-on-surface-variant">[필수] 개인정보 처리방침에 동의합니다</span>
                   </label>
@@ -106,13 +194,25 @@ export function SignupPage() {
                 </div>
               </div>
 
+              {error && <p className="text-sm text-error">{error}</p>}
+
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary-dim text-on-primary font-bold py-4 rounded-xl transition-all duration-200 active:scale-[0.98] mt-4 text-base flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-primary hover:bg-primary-dim text-on-primary font-bold py-4 rounded-xl transition-all duration-200 active:scale-[0.98] mt-4 text-base flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                가입 신청하기
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                {isLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    처리 중...
+                  </>
+                ) : (
+                  <>
+                    가입 신청하기
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </>
+                )}
               </button>
             </form>
 
@@ -129,143 +229,194 @@ export function SignupPage() {
   )
 }
 
-function TeacherForm() {
+interface FormProps {
+  fields: FormFields
+  setField: (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  fieldErrors: Record<string, string>
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null
+  return <p className="text-xs text-error mt-1 ml-1">{message}</p>
+}
+
+function SchoolSelect({
+  value,
+  onChange,
+  error,
+}: {
+  value: string
+  onChange: React.ChangeEventHandler<HTMLSelectElement>
+  error?: string
+}) {
+  return (
+    <div className="relative">
+      <select className={SELECT_CLASS} value={value} onChange={onChange}>
+        <option value="" disabled>학교를 선택하세요</option>
+        {SCHOOLS.map((s) => (
+          <option key={s.value} value={s.value}>{s.label}</option>
+        ))}
+      </select>
+      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <span className="material-symbols-outlined text-outline-variant text-lg">expand_more</span>
+      </div>
+      <FieldError message={error} />
+    </div>
+  )
+}
+
+function TeacherForm({ fields, setField, fieldErrors }: FormProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>성명</label>
-          <input className={INPUT_CLASS} type="text" placeholder="홍길동" required />
+          <input className={INPUT_CLASS} type="text" placeholder="홍길동" value={fields.name} onChange={setField('name')} />
+          <FieldError message={fieldErrors.name} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>소속 학교</label>
-          <div className="relative">
-            <select className={SELECT_CLASS} required defaultValue="">
-              <option value="" disabled>학교를 선택하세요</option>
-              {MOCK_SCHOOLS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-outline-variant text-lg">expand_more</span>
-            </div>
-          </div>
+          <SchoolSelect value={fields.school} onChange={setField('school')} error={fieldErrors.school} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
-          <label className={LABEL_CLASS}>아이디 (이메일)</label>
-          <input className={INPUT_CLASS} type="email" placeholder="example@school.kr" required autoComplete="email" />
+          <label className={LABEL_CLASS}>이메일</label>
+          <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
+          <FieldError message={fieldErrors.email} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>사번/교원번호</label>
-          <input className={INPUT_CLASS} type="text" placeholder="예: T20240001" required />
+          <input className={INPUT_CLASS} type="text" placeholder="예: T20240001" value={fields.schoolNumber} onChange={setField('schoolNumber')} />
+          <FieldError message={fieldErrors.schoolNumber} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>담임 학년 <span className="normal-case font-normal">(선택)</span></label>
+          <input className={INPUT_CLASS} type="number" placeholder="예: 2" min={1} max={3} value={fields.grade} onChange={setField('grade')} />
+          <FieldError message={fieldErrors.grade} />
+        </div>
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>담임 반 <span className="normal-case font-normal">(선택)</span></label>
+          <input className={INPUT_CLASS} type="number" placeholder="예: 3" min={1} value={fields.classNum} onChange={setField('classNum')} />
+          <FieldError message={fieldErrors.classNum} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호</label>
-          <input className={INPUT_CLASS} type="password" placeholder="8자 이상 입력" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="8자 이상 입력" autoComplete="new-password" value={fields.password} onChange={setField('password')} />
+          <FieldError message={fieldErrors.password} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호 확인</label>
-          <input className={INPUT_CLASS} type="password" placeholder="비밀번호 재입력" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="비밀번호 재입력" autoComplete="new-password" value={fields.passwordConfirm} onChange={setField('passwordConfirm')} />
         </div>
       </div>
     </>
   )
 }
 
-function StudentForm() {
+function StudentForm({ fields, setField, fieldErrors }: FormProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>성명</label>
-          <input className={INPUT_CLASS} type="text" placeholder="성명을 입력하세요" required />
+          <input className={INPUT_CLASS} type="text" placeholder="성명을 입력하세요" value={fields.name} onChange={setField('name')} />
+          <FieldError message={fieldErrors.name} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>소속 학교</label>
-          <div className="relative">
-            <select className={SELECT_CLASS} required defaultValue="">
-              <option value="" disabled>학교를 선택하세요</option>
-              {MOCK_SCHOOLS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-outline-variant text-lg">expand_more</span>
-            </div>
-          </div>
+          <SchoolSelect value={fields.school} onChange={setField('school')} error={fieldErrors.school} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
-          <label className={LABEL_CLASS}>아이디 (이메일)</label>
-          <input className={INPUT_CLASS} type="email" placeholder="example@school.kr" required autoComplete="email" />
+          <label className={LABEL_CLASS}>이메일</label>
+          <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
+          <FieldError message={fieldErrors.email} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>학번</label>
-          <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" required />
+          <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" value={fields.schoolNumber} onChange={setField('schoolNumber')} />
+          <FieldError message={fieldErrors.schoolNumber} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>학년 <span className="normal-case font-normal">(선택)</span></label>
+          <input className={INPUT_CLASS} type="number" placeholder="예: 2" min={1} max={3} value={fields.grade} onChange={setField('grade')} />
+          <FieldError message={fieldErrors.grade} />
+        </div>
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>반 <span className="normal-case font-normal">(선택)</span></label>
+          <input className={INPUT_CLASS} type="number" placeholder="예: 3" min={1} value={fields.classNum} onChange={setField('classNum')} />
+          <FieldError message={fieldErrors.classNum} />
+        </div>
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>번호 <span className="normal-case font-normal">(선택)</span></label>
+          <input className={INPUT_CLASS} type="number" placeholder="예: 15" min={1} value={fields.number} onChange={setField('number')} />
+          <FieldError message={fieldErrors.number} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호</label>
-          <input className={INPUT_CLASS} type="password" placeholder="8자 이상 입력" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="8자 이상 입력" autoComplete="new-password" value={fields.password} onChange={setField('password')} />
+          <FieldError message={fieldErrors.password} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호 확인</label>
-          <input className={INPUT_CLASS} type="password" placeholder="비밀번호 재입력" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="비밀번호 재입력" autoComplete="new-password" value={fields.passwordConfirm} onChange={setField('passwordConfirm')} />
         </div>
       </div>
     </>
   )
 }
 
-function ParentForm() {
+function ParentForm({ fields, setField, fieldErrors }: FormProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>성명</label>
-          <input className={INPUT_CLASS} type="text" placeholder="홍길동" required />
+          <input className={INPUT_CLASS} type="text" placeholder="홍길동" value={fields.name} onChange={setField('name')} />
+          <FieldError message={fieldErrors.name} />
         </div>
         <div className="space-y-1">
-          <label className={LABEL_CLASS}>이메일 (아이디)</label>
-          <input className={INPUT_CLASS} type="email" placeholder="example@email.com" required autoComplete="email" />
+          <label className={LABEL_CLASS}>이메일</label>
+          <input className={INPUT_CLASS} type="text" placeholder="example@email.com" autoComplete="email" value={fields.email} onChange={setField('email')} />
+          <FieldError message={fieldErrors.email} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호</label>
-          <input className={INPUT_CLASS} type="password" placeholder="••••••••" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="••••••••" autoComplete="new-password" value={fields.password} onChange={setField('password')} />
+          <FieldError message={fieldErrors.password} />
         </div>
         <div className="space-y-1">
           <label className={LABEL_CLASS}>비밀번호 확인</label>
-          <input className={INPUT_CLASS} type="password" placeholder="••••••••" required autoComplete="new-password" />
+          <input className={INPUT_CLASS} type="password" placeholder="••••••••" autoComplete="new-password" value={fields.passwordConfirm} onChange={setField('passwordConfirm')} />
         </div>
       </div>
-
-      {/* 자녀 정보 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>자녀 소속 학교</label>
-          <div className="relative">
-            <select className={SELECT_CLASS} required defaultValue="">
-              <option value="" disabled>학교를 선택하세요</option>
-              {MOCK_SCHOOLS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-outline-variant text-lg">expand_more</span>
-            </div>
-          </div>
+      <div className="space-y-4 pt-2">
+        <div>
+          <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">자녀 정보</p>
+          <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 학교와 학번을 입력하면 자동으로 연결됩니다.</p>
         </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>자녀 학번</label>
-          <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" required />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className={LABEL_CLASS}>자녀 소속 학교</label>
+            <SchoolSelect value={fields.childSchool} onChange={setField('childSchool')} error={fieldErrors.childSchool} />
+          </div>
+          <div className="space-y-1">
+            <label className={LABEL_CLASS}>자녀 학번</label>
+            <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" value={fields.childSchoolNumber} onChange={setField('childSchoolNumber')} />
+            <FieldError message={fieldErrors.childSchoolNumber} />
+          </div>
         </div>
       </div>
     </>

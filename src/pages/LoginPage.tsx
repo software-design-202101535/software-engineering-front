@@ -1,11 +1,9 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '@/features/auth'
+import { Link } from 'react-router-dom'
+import { useLoginForm } from '@/features/auth'
+import type { LoginRole } from '@/features/auth'
+import type { SchoolType } from '@/types'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import type { UserRole } from '@/types'
-import { MOCK_SCHOOLS } from '@/mocks'
-
-type LoginRole = 'TEACHER' | 'STUDENT' | 'PARENT'
+import { SCHOOLS } from '@/mocks'
 
 const ROLE_LABELS: Record<LoginRole, string> = {
   TEACHER: '교사',
@@ -13,62 +11,30 @@ const ROLE_LABELS: Record<LoginRole, string> = {
   PARENT: '학부모',
 }
 
-// 테스트용 안내
 const TEST_HINT: Record<LoginRole, string> = {
   TEACHER: '학교: 서울중학교 / 사번: 20240101 / 비밀번호: password',
   STUDENT: '학교: 서울중학교 / 학번: 2024030101 / 비밀번호: password',
   PARENT: 'parent@edu.com / 비밀번호: password',
 }
 
-
 export function LoginPage() {
-  const [activeRole, setActiveRole] = useState<LoginRole>('TEACHER')
-  const [school, setSchool] = useState('')
-  const [identifier, setIdentifier] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-
-  const { login } = useAuth()
-  const navigate = useNavigate()
-
-  const handleRoleChange = (role: LoginRole) => {
-    setActiveRole(role)
-    setSchool('')
-    setIdentifier('')
-    setEmail('')
-    setPassword('')
-    setError('')
-    setShowPassword(false)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
-    try {
-      if (activeRole === 'PARENT') {
-        await login({ role: 'PARENT', email, password })
-      } else {
-        await login({ role: activeRole, school, identifier, password })
-      }
-      const saved = localStorage.getItem('user')
-      const user = saved ? (JSON.parse(saved) as { role: UserRole }) : null
-      const roleRoutes: Record<UserRole, string> = {
-        TEACHER: '/dashboard',
-        STUDENT: '/student/grades',
-        PARENT: '/parent/grades',
-        ADMIN: '/admin',
-      }
-      navigate(user ? roleRoutes[user.role] : '/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '로그인에 실패하였습니다.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    activeRole,
+    school,
+    schoolNumber,
+    email,
+    password,
+    showPassword,
+    error,
+    isLoading,
+    setSchool,
+    setSchoolNumber,
+    setEmail,
+    setPassword,
+    handleRoleChange,
+    handleSubmit,
+    toggleShowPassword,
+  } = useLoginForm()
 
   return (
     <AuthLayout>
@@ -105,8 +71,7 @@ export function LoginPage() {
               <span className="font-medium text-primary">테스트</span>: {TEST_HINT[activeRole]}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 교사/학생: 학교 선택 + 사번/학번 */}
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
               {activeRole !== 'PARENT' ? (
                 <>
                   {/* 학교 선택 */}
@@ -121,12 +86,12 @@ export function LoginPage() {
                       <select
                         value={school}
                         required
-                        onChange={(e) => setSchool(e.target.value)}
+                        onChange={(e) => setSchool(e.target.value as SchoolType | '')}
                         className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:ring-0 focus:border-primary pl-11 pr-4 py-3 text-sm text-on-surface transition-all rounded-t-lg appearance-none"
                       >
                         <option value="">학교를 선택하세요</option>
-                        {MOCK_SCHOOLS.map((s) => (
-                          <option key={s} value={s}>{s}</option>
+                        {SCHOOLS.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -147,10 +112,10 @@ export function LoginPage() {
                       <input
                         type="text"
                         placeholder={activeRole === 'TEACHER' ? '사번을 입력하세요' : '학번을 입력하세요'}
-                        value={identifier}
+                        value={schoolNumber}
                         required
                         autoComplete="username"
-                        onChange={(e) => setIdentifier(e.target.value)}
+                        onChange={(e) => setSchoolNumber(e.target.value)}
                         className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:ring-0 focus:border-primary pl-11 pr-4 py-3 text-sm text-on-surface placeholder:text-outline-variant transition-all rounded-t-lg"
                       />
                     </div>
@@ -202,7 +167,7 @@ export function LoginPage() {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((v) => !v)}
+                    onClick={toggleShowPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary"
                   >
                     <span className="material-symbols-outlined text-[20px]">

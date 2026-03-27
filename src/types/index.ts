@@ -1,27 +1,75 @@
 export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT'
 
+export type SchoolType =
+  | 'SUNRIN_HIGH_SCHOOL'
+  | 'HANGUK_MIDDLE_SCHOOL'
+  | 'SEOUL_HIGH_SCHOOL'
+  | 'INCHEON_MIDDLE_SCHOOL'
+  | 'BUSAN_HIGH_SCHOOL'
+
+export const SCHOOL_LABEL: Record<SchoolType, string> = {
+  SUNRIN_HIGH_SCHOOL: '선린고등학교',
+  HANGUK_MIDDLE_SCHOOL: '한국중학교',
+  SEOUL_HIGH_SCHOOL: '서울고등학교',
+  INCHEON_MIDDLE_SCHOOL: '인천중학교',
+  BUSAN_HIGH_SCHOOL: '부산고등학교',
+}
+
+
 export interface User {
   id: number
   email: string
   name: string
   role: UserRole
   phone?: string
-}
-
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
+  grade?: number              // TEACHER 역할: 담당 학년
+  classNum?: number           // TEACHER 역할: 담당 반
+  studentId?: number          // STUDENT 역할: 본인 학생 레코드 ID
+  childStudentIds?: number[]  // PARENT 역할: 자녀 학생 레코드 ID 목록
 }
 
 export type LoginRequest =
-  | { role: 'TEACHER'; school: string; identifier: string; password: string }
-  | { role: 'STUDENT'; school: string; identifier: string; password: string }
+  | { role: 'TEACHER' | 'STUDENT'; school: SchoolType; schoolNumber: string; password: string }
   | { role: 'PARENT'; email: string; password: string }
 
 export interface LoginResponse {
   accessToken: string
-  refreshToken: string
   user: User
+}
+
+export interface TeacherRegisterRequest {
+  email: string
+  password: string
+  name: string
+  school: SchoolType
+  schoolNumber: string
+  grade?: number
+  classNum?: number
+  termsAgreed: boolean
+  privacyAgreed: boolean
+}
+
+export interface StudentRegisterRequest {
+  email: string
+  password: string
+  name: string
+  school: SchoolType
+  schoolNumber: string
+  grade?: number
+  classNum?: number
+  number?: number
+  termsAgreed: boolean
+  privacyAgreed: boolean
+}
+
+export interface ParentRegisterRequest {
+  email: string
+  password: string
+  name: string
+  childSchool: SchoolType
+  childSchoolNumber: string
+  termsAgreed: boolean
+  privacyAgreed: boolean
 }
 
 export interface Student {
