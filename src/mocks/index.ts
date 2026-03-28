@@ -1,7 +1,6 @@
 export { mockUsers, findUserByEmail } from './users'
-export { MOCK_SCHOOLS } from './schools'
+export { SCHOOLS } from './schools'
 export { mockStudents } from './students'
-export { mockGrades } from './grades'
 export { mockFeedbacks } from './feedback'
 export { mockCounselings } from './counseling'
 export { mockNotifications } from './notifications'
