@@ -95,13 +95,20 @@ export interface ParentRegisterRequest {
   privacyAgreed: boolean
 }
 
+export interface StudentSummary {
+  id: number
+  name: string
+  grade: number
+  classNum: number
+  number: number
+}
+
 export interface Student {
   id: number
   name: string
   grade: number
   classNum: number
   number: number
-  gender: 'M' | 'F'
   birthDate: string
   phone?: string
   parentPhone?: string

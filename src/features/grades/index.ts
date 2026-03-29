@@ -1,4 +1,4 @@
-export { useGrades, useCreateGrade, useUpdateGrade, useDeleteGrade, useClassStudents } from './hooks/useGrades'
+export { useGrades, useBatchGrades } from './hooks/useGrades'
 export { useGradePage } from './hooks/useGradePage'
 export { SemesterSelector } from './components/SemesterSelector'
 export { GradeTable } from './components/GradeTable'

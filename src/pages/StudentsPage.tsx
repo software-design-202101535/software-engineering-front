@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { fetchStudents } from '@/api/students'
 import { useAuth } from '@/features/auth'
-import type { Student } from '@/types'
+import { useClassStudents } from '@/features/students'
+import type { StudentSummary } from '@/types'
 
-function StudentCard({ student, onClick }: { student: Student; onClick: () => void }) {
+function StudentCard({ student, onClick }: { student: StudentSummary; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -20,7 +19,7 @@ function StudentCard({ student, onClick }: { student: Student; onClick: () => vo
             {student.name}
           </p>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            {student.gender === 'M' ? '남' : '여'} · {student.number}번
+            {student.number}번
           </p>
         </div>
         <span className="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-primary transition-colors">
@@ -35,10 +34,7 @@ export function StudentsPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const { data: students = [], isLoading } = useQuery({
-    queryKey: ['students', user?.grade, user?.classNum],
-    queryFn: () => fetchStudents({ grade: user?.grade, classNum: user?.classNum }),
-  })
+  const { data: students = [], isLoading } = useClassStudents()
 
   if (isLoading) {
     return (

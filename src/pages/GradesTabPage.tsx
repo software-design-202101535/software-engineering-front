@@ -6,7 +6,7 @@ import {
   ClassStudentPanel,
   BulkSettingModal,
 } from '@/features/grades'
-import type { Student } from '@/types'
+import type { StudentSummary } from '@/types'
 
 export function GradesTabPage() {
   const {
@@ -222,7 +222,7 @@ export function GradesTabPage() {
         <BulkSettingModal
           target={bulkTarget}
           classLabel={`${student.grade}학년 ${student.classNum}반`}
-          selectedStudents={classStudents.filter((s: Student) => selectedIds.includes(s.id))}
+          selectedStudents={classStudents.filter((s: StudentSummary) => selectedIds.includes(s.id))}
           onConfirm={handleBulkConfirm}
           onClose={() => setBulkTarget(null)}
         />

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import type { Student } from '@/types'
+import type { StudentSummary } from '@/types'
 
 interface ClassStudentPanelProps {
-  students: Student[]
+  students: StudentSummary[]
   currentStudentId: number
   isSelecting: boolean
   selectedIds: number[]
@@ -25,7 +25,7 @@ export function ClassStudentPanel({
       ? `${students[0].grade}학년 ${students[0].classNum}반`
       : ''
 
-  const handleStudentClick = (s: Student) => {
+  const handleStudentClick = (s: StudentSummary) => {
     if (isSelecting) {
       onToggleSelect(s.id)
     } else {

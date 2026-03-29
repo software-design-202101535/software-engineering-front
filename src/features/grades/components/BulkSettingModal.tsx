@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import type { Student, SubjectCode } from '@/types'
+import type { StudentSummary, SubjectCode } from '@/types'
 import { SUBJECT_LABEL } from '@/types'
 import { PRESET_SUBJECTS } from '../constants'
 
 interface BulkSettingModalProps {
   target: 'class' | 'selected'
   classLabel: string
-  selectedStudents: Student[]
+  selectedStudents: StudentSummary[]
   onConfirm: (subjects: SubjectCode[]) => void
   onClose: () => void
 }
