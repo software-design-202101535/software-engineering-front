@@ -1,0 +1,13 @@
+import type { SubjectCode } from '@/types'
+
+export const ALL_SUBJECTS: SubjectCode[] = [
+  'KOREAN', 'MATH', 'ENGLISH', 'SCIENCE', 'SOCIAL', 'HISTORY',
+  'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'EARTH_SCIENCE',
+  'PHYSICAL_EDUCATION', 'MUSIC', 'ART', 'ETHICS',
+  'TECHNOLOGY', 'CHINESE_CHARACTERS', 'SECOND_FOREIGN_LANGUAGE',
+]
+
+export const PRESET_SUBJECTS: SubjectCode[] = [
+  'KOREAN', 'MATH', 'ENGLISH', 'SCIENCE', 'SOCIAL', 'HISTORY',
+  'PHYSICAL_EDUCATION', 'MUSIC', 'ART', 'ETHICS',
+]

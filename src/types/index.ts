@@ -16,6 +16,29 @@ export const SCHOOL_LABEL: Record<SchoolType, string> = {
 }
 
 
+// API spec 기준 enum (백엔드 전송 값)
+export type ExamType = 'MIDTERM' | 'FINAL' | 'QUIZ'
+export type SubjectCode =
+  | 'KOREAN' | 'MATH' | 'ENGLISH' | 'SCIENCE' | 'SOCIAL' | 'HISTORY'
+  | 'PHYSICS' | 'CHEMISTRY' | 'BIOLOGY' | 'EARTH_SCIENCE'
+  | 'PHYSICAL_EDUCATION' | 'MUSIC' | 'ART' | 'ETHICS'
+  | 'TECHNOLOGY' | 'CHINESE_CHARACTERS' | 'SECOND_FOREIGN_LANGUAGE'
+
+// 표시용 한국어 레이블
+export const EXAM_TYPE_LABEL: Record<ExamType, string> = {
+  MIDTERM: '중간고사',
+  FINAL: '기말고사',
+  QUIZ: '수시',
+}
+
+export const SUBJECT_LABEL: Record<SubjectCode, string> = {
+  KOREAN: '국어', MATH: '수학', ENGLISH: '영어',
+  SCIENCE: '과학', SOCIAL: '사회', HISTORY: '역사',
+  PHYSICS: '물리', CHEMISTRY: '화학', BIOLOGY: '생물', EARTH_SCIENCE: '지구과학',
+  PHYSICAL_EDUCATION: '체육', MUSIC: '음악', ART: '미술', ETHICS: '도덕',
+  TECHNOLOGY: '기술', CHINESE_CHARACTERS: '한문', SECOND_FOREIGN_LANGUAGE: '제2외국어',
+}
+
 export interface User {
   id: number
   email: string
@@ -72,13 +95,20 @@ export interface ParentRegisterRequest {
   privacyAgreed: boolean
 }
 
+export interface StudentSummary {
+  id: number
+  name: string
+  grade: number
+  classNum: number
+  number: number
+}
+
 export interface Student {
   id: number
   name: string
   grade: number
   classNum: number
   number: number
-  gender: 'M' | 'F'
   birthDate: string
   phone?: string
   parentPhone?: string
@@ -88,15 +118,17 @@ export interface Student {
 
 export interface Grade {
   id: number
-  studentId: number
-  subject: string
-  score: number
-  grade: 'A' | 'B' | 'C' | 'D' | 'F'
+  subject: SubjectCode
+  score: number | null       // null = 미입력
+  grade: 'A' | 'B' | 'C' | 'D' | 'F' | null  // null = score 없을 때
+}
+
+export interface BatchGradeRequest {
   semester: string
-  year: number
-  teacherId: number
-  createdAt: string
-  updatedAt: string
+  examType: ExamType
+  create?: Array<{ subject: SubjectCode; score?: number | null }>
+  update?: Array<{ id: number; subject: SubjectCode; score?: number | null }>
+  delete?: number[]
 }
 
 export interface GradeStats {
