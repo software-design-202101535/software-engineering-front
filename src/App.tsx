@@ -11,6 +11,7 @@ import { ParentGradesPage } from '@/pages/ParentGradesPage'
 import { PlaceholderTabPage } from '@/pages/PlaceholderTabPage'
 import { InfoTabPage } from '@/pages/InfoTabPage'
 import { AttendanceTabPage } from '@/pages/AttendanceTabPage'
+import { RecordsTabPage } from '@/pages/RecordsTabPage'
 
 export default function App() {
   return (
@@ -38,7 +39,7 @@ export default function App() {
             <Route path="info" element={<InfoTabPage />} />
             <Route path="grades" element={<GradesTabPage />} />
             <Route path="attendance" element={<AttendanceTabPage />} />
-            <Route path="records" element={<PlaceholderTabPage tabName="학생부" />} />
+            <Route path="records" element={<RecordsTabPage />} />
             <Route path="feedback" element={<PlaceholderTabPage tabName="피드백" />} />
             <Route path="counseling" element={<PlaceholderTabPage tabName="상담" />} />
           </Route>
