@@ -9,6 +9,8 @@ import { GradesTabPage } from '@/pages/GradesTabPage'
 import { StudentGradesPage } from '@/pages/StudentGradesPage'
 import { ParentGradesPage } from '@/pages/ParentGradesPage'
 import { PlaceholderTabPage } from '@/pages/PlaceholderTabPage'
+import { InfoTabPage } from '@/pages/InfoTabPage'
+import { AttendanceTabPage } from '@/pages/AttendanceTabPage'
 
 export default function App() {
   return (
@@ -33,9 +35,9 @@ export default function App() {
           {/* 교사 — 학생 상세 (전체 화면, 탭 바 고정) */}
           <Route path="/students/:studentId" element={<StudentDetailLayout />}>
             <Route index element={<Navigate to="grades" replace />} />
-            <Route path="info" element={<PlaceholderTabPage tabName="기본정보" />} />
+            <Route path="info" element={<InfoTabPage />} />
             <Route path="grades" element={<GradesTabPage />} />
-            <Route path="attendance" element={<PlaceholderTabPage tabName="출결" />} />
+            <Route path="attendance" element={<AttendanceTabPage />} />
             <Route path="records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="feedback" element={<PlaceholderTabPage tabName="피드백" />} />
             <Route path="counseling" element={<PlaceholderTabPage tabName="상담" />} />
