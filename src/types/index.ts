@@ -176,12 +176,32 @@ export interface Note {
   createdAt: string
 }
 
+export interface UpdateStudentRequest {
+  name: string
+  birthDate?: string
+  phone?: string
+  parentPhone?: string
+  address?: string
+}
+
 export interface Attendance {
   id: number
   studentId: number
   date: string
-  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_LEAVE'
+  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EARLY_LEAVE' | 'SICK'
   reason?: string
+}
+
+export interface AttendanceRequest {
+  date: string
+  status: 'ABSENT' | 'LATE' | 'EARLY_LEAVE' | 'SICK'
+  reason?: string
+}
+
+export interface NoteRequest {
+  category: NoteCategory
+  content: string
+  date: string
 }
 
 export type NotificationType = 'GRADE' | 'FEEDBACK' | 'COUNSELING' | 'SYSTEM'
