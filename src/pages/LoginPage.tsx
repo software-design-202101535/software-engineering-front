@@ -3,18 +3,12 @@ import { useLoginForm } from '@/features/auth'
 import type { LoginRole } from '@/features/auth'
 import type { SchoolType } from '@/types'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import { SCHOOLS } from '@/mocks'
+import { SCHOOLS } from '@/types'
 
 const ROLE_LABELS: Record<LoginRole, string> = {
   TEACHER: '교사',
   STUDENT: '학생',
   PARENT: '학부모',
-}
-
-const TEST_HINT: Record<LoginRole, string> = {
-  TEACHER: '학교: 서울중학교 / 사번: 20240101 / 비밀번호: password',
-  STUDENT: '학교: 서울중학교 / 학번: 2024030101 / 비밀번호: password',
-  PARENT: 'parent@edu.com / 비밀번호: password',
 }
 
 export function LoginPage() {
@@ -64,11 +58,6 @@ export function LoginPage() {
           <div className="p-10">
             <div className="mb-8 text-center">
               <h1 className="font-headline text-3xl font-bold text-on-surface">로그인</h1>
-            </div>
-
-            {/* 테스트 안내 */}
-            <div className="mb-6 px-4 py-2.5 bg-surface-container rounded-lg text-xs text-on-surface-variant leading-relaxed">
-              <span className="font-medium text-primary">테스트</span>: {TEST_HINT[activeRole]}
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-6">

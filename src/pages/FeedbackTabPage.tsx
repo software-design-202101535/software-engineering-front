@@ -1,30 +1,5 @@
-import { useFeedbackPage, FeedbackModal } from '@/features/feedback'
-import type { FeedbackCategory } from '@/types'
-
-const CATEGORY_FILTERS: Array<{ value: FeedbackCategory | 'ALL'; label: string }> = [
-  { value: 'ALL', label: '전체' },
-  { value: 'GRADE', label: '성적' },
-  { value: 'BEHAVIOR', label: '행동' },
-  { value: 'ATTITUDE', label: '태도' },
-  { value: 'ATTENDANCE', label: '출결' },
-  { value: 'OTHER', label: '기타' },
-]
-
-const CATEGORY_BADGE: Record<FeedbackCategory, string> = {
-  GRADE: 'bg-blue-100 text-blue-700',
-  BEHAVIOR: 'bg-purple-100 text-purple-700',
-  ATTITUDE: 'bg-green-100 text-green-700',
-  ATTENDANCE: 'bg-orange-100 text-orange-700',
-  OTHER: 'bg-surface-container text-on-surface-variant',
-}
-
-const CATEGORY_LABEL: Record<FeedbackCategory, string> = {
-  GRADE: '성적',
-  BEHAVIOR: '행동',
-  ATTITUDE: '태도',
-  ATTENDANCE: '출결',
-  OTHER: '기타',
-}
+import { useFeedbackPage, FeedbackModal, FeedbackCard } from '@/features/feedback'
+import { CATEGORY_FILTERS } from '@/features/feedback/constants'
 
 export function FeedbackTabPage() {
   const {
@@ -92,133 +67,20 @@ export function FeedbackTabPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {feedbacks.map((fb) => {
-            const mine = isOwner(fb.teacherId)
-
-            if (deleteState.type === 'confirming' && deleteState.id === fb.id) {
-              return (
-                <div
-                  key={fb.id}
-                  className="bg-error/5 border border-error/20 rounded-xl px-5 py-4 flex items-center justify-between gap-4"
-                >
-                  <p className="text-sm text-on-surface">이 피드백을 삭제할까요?</p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleCancelDelete}
-                      className="px-3 py-1.5 text-xs text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-colors"
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleConfirmDelete}
-                      disabled={isMutating}
-                      className="px-3 py-1.5 text-xs text-on-error bg-error rounded-lg hover:bg-error/80 transition-colors disabled:opacity-50"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              )
-            }
-
-            return (
-              <div
-                key={fb.id}
-                className="bg-surface-container-lowest border border-surface-container rounded-xl px-5 py-4"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {/* 카테고리 뱃지 */}
-                    <span
-                      className={`px-2 py-0.5 text-xs font-medium rounded-full ${CATEGORY_BADGE[fb.category]}`}
-                    >
-                      {CATEGORY_LABEL[fb.category]}
-                    </span>
-
-                    {/* 날짜 */}
-                    <span className="text-xs text-on-surface-variant">{fb.date}</span>
-
-                    {/* 공개 뱃지 (본인: 클릭 토글 / 타인: 정적) */}
-                    {mine ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleToggleVisibility(fb.id, !fb.studentVisible, fb.parentVisible)
-                          }
-                          className={`px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
-                            fb.studentVisible
-                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                              : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                          }`}
-                        >
-                          {fb.studentVisible ? '학생공개' : '학생비공개'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleToggleVisibility(fb.id, fb.studentVisible, !fb.parentVisible)
-                          }
-                          className={`px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
-                            fb.parentVisible
-                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                              : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                          }`}
-                        >
-                          {fb.parentVisible ? '학부모공개' : '학부모비공개'}
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        {fb.studentVisible && (
-                          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                            학생공개
-                          </span>
-                        )}
-                        {fb.parentVisible && (
-                          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                            학부모공개
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* 타인 작성: 교사 이름 */}
-                    {!mine && (
-                      <span className="text-xs text-on-surface-variant mr-1">
-                        {fb.teacherName}
-                      </span>
-                    )}
-                    {/* 본인 작성: 수정/삭제 */}
-                    {mine && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(fb.id)}
-                          className="p-1 text-on-surface-variant hover:text-primary transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleStartDelete(fb.id)}
-                          className="p-1 text-on-surface-variant hover:text-error transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-sm text-on-surface whitespace-pre-wrap">{fb.content}</p>
-              </div>
-            )
-          })}
+          {feedbacks.map((fb) => (
+            <FeedbackCard
+              key={fb.id}
+              feedback={fb}
+              isMine={isOwner(fb.teacherId)}
+              deleteState={deleteState}
+              isMutating={isMutating}
+              onEdit={handleOpenEdit}
+              onStartDelete={handleStartDelete}
+              onCancelDelete={handleCancelDelete}
+              onConfirmDelete={handleConfirmDelete}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          ))}
         </div>
       )}
 

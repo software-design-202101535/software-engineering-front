@@ -9,11 +9,19 @@ import {
   deleteFeedback,
   patchFeedbackVisibility,
 } from '@/api/feedback'
-import type { FeedbackCategory, FeedbackRequest } from '@/types'
+import type { FeedbackCategory, FeedbackRequest, Feedback, ModalMode, DeleteState } from '@/types'
 
 type CategoryFilter = FeedbackCategory | 'ALL'
-type ModalMode = { type: 'closed' } | { type: 'adding' } | { type: 'editing'; id: number }
-type DeleteState = { type: 'idle' } | { type: 'confirming'; id: number }
+
+function toFeedbackRequest(fb: Feedback): FeedbackRequest {
+  return {
+    category: fb.category,
+    date: fb.date,
+    content: fb.content,
+    studentVisible: fb.studentVisible,
+    parentVisible: fb.parentVisible,
+  }
+}
 
 const INITIAL_FORM: FeedbackRequest = {
   category: 'GRADE',
@@ -101,13 +109,7 @@ export function useFeedbackPage() {
   const handleOpenEdit = (feedbackId: number) => {
     const fb = allFeedbacks.find((f) => f.id === feedbackId)
     if (!fb) return
-    setForm({
-      category: fb.category,
-      date: fb.date,
-      content: fb.content,
-      studentVisible: fb.studentVisible,
-      parentVisible: fb.parentVisible,
-    })
+    setForm(toFeedbackRequest(fb))
     setModalMode({ type: 'editing', id: feedbackId })
   }
 

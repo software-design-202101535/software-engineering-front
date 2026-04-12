@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import { SCHOOLS } from '@/mocks'
 import { registerTeacher, registerStudent, registerParent } from '@/api/auth'
-import type { SchoolType } from '@/types'
+import { SCHOOLS, type SchoolType } from '@/types'
 
 type SignupRole = 'teacher' | 'student' | 'parent'
 

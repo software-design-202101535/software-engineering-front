@@ -1,5 +1,8 @@
 export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT'
 
+export type ModalMode = { type: 'closed' } | { type: 'adding' } | { type: 'editing'; id: number }
+export type DeleteState = { type: 'idle' } | { type: 'confirming'; id: number }
+
 export type SchoolType =
   | 'SUNRIN_HIGH_SCHOOL'
   | 'HANGUK_MIDDLE_SCHOOL'
@@ -7,14 +10,13 @@ export type SchoolType =
   | 'INCHEON_MIDDLE_SCHOOL'
   | 'BUSAN_HIGH_SCHOOL'
 
-export const SCHOOL_LABEL: Record<SchoolType, string> = {
-  SUNRIN_HIGH_SCHOOL: '선린고등학교',
-  HANGUK_MIDDLE_SCHOOL: '한국중학교',
-  SEOUL_HIGH_SCHOOL: '서울고등학교',
-  INCHEON_MIDDLE_SCHOOL: '인천중학교',
-  BUSAN_HIGH_SCHOOL: '부산고등학교',
-}
-
+export const SCHOOLS: { value: SchoolType; label: string }[] = [
+  { value: 'SUNRIN_HIGH_SCHOOL', label: '선린고등학교' },
+  { value: 'HANGUK_MIDDLE_SCHOOL', label: '한국중학교' },
+  { value: 'SEOUL_HIGH_SCHOOL', label: '서울고등학교' },
+  { value: 'INCHEON_MIDDLE_SCHOOL', label: '인천중학교' },
+  { value: 'BUSAN_HIGH_SCHOOL', label: '부산고등학교' },
+]
 
 // API spec 기준 enum (백엔드 전송 값)
 export type ExamType = 'MIDTERM' | 'FINAL' | 'QUIZ'
@@ -170,6 +172,7 @@ export interface Counseling {
   counselingDate: string
   content: string
   nextDate?: string
+  nextPlan?: string
   sharedWithTeachers: boolean
   createdAt: string
 }
@@ -178,6 +181,7 @@ export interface CounselingRequest {
   counselingDate: string
   content: string
   nextDate?: string
+  nextPlan?: string
   sharedWithTeachers: boolean
 }
 
