@@ -16,6 +16,7 @@ function toCounselingRequest(c: Counseling): CounselingRequest {
     counselingDate: c.counselingDate,
     content: c.content,
     nextDate: c.nextDate ?? '',
+    nextPlan: c.nextPlan ?? '',
     sharedWithTeachers: c.sharedWithTeachers,
   }
 }
@@ -24,6 +25,7 @@ const INITIAL_FORM: CounselingRequest = {
   counselingDate: new Date().toISOString().slice(0, 10),
   content: '',
   nextDate: '',
+  nextPlan: '',
   sharedWithTeachers: false,
 }
 
@@ -123,6 +125,7 @@ export function useCounselingPage() {
     const body: CounselingRequest = {
       ...form,
       nextDate: form.nextDate || undefined,
+      nextPlan: form.nextPlan || undefined,
     }
     if (modalMode.type === 'adding') {
       createMutation.mutate(body)

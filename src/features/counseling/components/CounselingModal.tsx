@@ -72,6 +72,20 @@ export function CounselingModal({
             />
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-on-surface-variant">
+              다음 상담 계획
+              <span className="ml-1 font-normal text-on-surface-variant">(선택)</span>
+            </label>
+            <textarea
+              value={form.nextPlan ?? ''}
+              onChange={(e) => onFormChange('nextPlan', e.target.value)}
+              rows={3}
+              placeholder="다음 상담에서 다룰 내용을 입력하세요"
+              className="px-3 py-2 text-sm bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-primary resize-none"
+            />
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-on-surface-variant">공유 설정</label>
             <label className="flex items-center gap-2 cursor-pointer">

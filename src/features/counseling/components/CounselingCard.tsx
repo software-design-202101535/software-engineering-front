@@ -100,11 +100,18 @@ export function CounselingCard({
 
       <p className="text-sm text-on-surface whitespace-pre-wrap mb-3">{c.content}</p>
 
-      {c.nextDate && (
-        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-          <span className="material-symbols-outlined text-[14px]">event</span>
-          <span>다음 상담 예정</span>
-          <span className="font-medium text-on-surface">{c.nextDate}</span>
+      {(c.nextDate || c.nextPlan) && (
+        <div className="flex flex-col gap-1 pt-3 border-t border-surface-container">
+          {c.nextDate && (
+            <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+              <span className="material-symbols-outlined text-[14px]">event</span>
+              <span>다음 상담 예정</span>
+              <span className="font-medium text-on-surface">{c.nextDate}</span>
+            </div>
+          )}
+          {c.nextPlan && (
+            <p className="text-xs text-on-surface-variant whitespace-pre-wrap">{c.nextPlan}</p>
+          )}
         </div>
       )}
     </div>

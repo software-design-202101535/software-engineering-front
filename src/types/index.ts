@@ -172,6 +172,7 @@ export interface Counseling {
   counselingDate: string
   content: string
   nextDate?: string
+  nextPlan?: string
   sharedWithTeachers: boolean
   createdAt: string
 }
@@ -180,6 +181,7 @@ export interface CounselingRequest {
   counselingDate: string
   content: string
   nextDate?: string
+  nextPlan?: string
   sharedWithTeachers: boolean
 }
 
