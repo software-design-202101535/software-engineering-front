@@ -12,6 +12,7 @@ import { PlaceholderTabPage } from '@/pages/PlaceholderTabPage'
 import { InfoTabPage } from '@/pages/InfoTabPage'
 import { AttendanceTabPage } from '@/pages/AttendanceTabPage'
 import { RecordsTabPage } from '@/pages/RecordsTabPage'
+import { FeedbackTabPage } from '@/pages/FeedbackTabPage'
 
 export default function App() {
   return (
@@ -40,7 +41,7 @@ export default function App() {
             <Route path="grades" element={<GradesTabPage />} />
             <Route path="attendance" element={<AttendanceTabPage />} />
             <Route path="records" element={<RecordsTabPage />} />
-            <Route path="feedback" element={<PlaceholderTabPage tabName="피드백" />} />
+            <Route path="feedback" element={<FeedbackTabPage />} />
             <Route path="counseling" element={<PlaceholderTabPage tabName="상담" />} />
           </Route>
 
