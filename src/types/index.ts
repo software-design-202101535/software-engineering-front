@@ -138,7 +138,7 @@ export interface GradeStats {
   subjectGrades: Grade[]
 }
 
-export type FeedbackCategory = 'ACADEMIC' | 'BEHAVIOR' | 'ATTITUDE' | 'ATTENDANCE' | 'OTHER'
+export type FeedbackCategory = 'GRADE' | 'BEHAVIOR' | 'ATTITUDE' | 'ATTENDANCE' | 'OTHER'
 
 export interface Feedback {
   id: number
@@ -146,10 +146,20 @@ export interface Feedback {
   teacherId: number
   teacherName: string
   category: FeedbackCategory
+  date: string
   content: string
-  isShared: boolean
+  studentVisible: boolean
+  parentVisible: boolean
   createdAt: string
   updatedAt: string
+}
+
+export interface FeedbackRequest {
+  category: FeedbackCategory
+  date: string
+  content: string
+  studentVisible: boolean
+  parentVisible: boolean
 }
 
 export interface Counseling {
@@ -157,11 +167,18 @@ export interface Counseling {
   studentId: number
   teacherId: number
   teacherName: string
-  content: string
-  nextPlan?: string
   counselingDate: string
-  isShared: boolean
+  content: string
+  nextDate?: string
+  sharedWithTeachers: boolean
   createdAt: string
+}
+
+export interface CounselingRequest {
+  counselingDate: string
+  content: string
+  nextDate?: string
+  sharedWithTeachers: boolean
 }
 
 export type NoteCategory = 'ACHIEVEMENT' | 'SPECIAL' | 'VOLUNTEER' | 'CAREER' | 'OTHER'
