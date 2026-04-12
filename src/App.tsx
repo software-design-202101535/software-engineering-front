@@ -15,6 +15,7 @@ import { RecordsTabPage } from '@/pages/RecordsTabPage'
 import { FeedbackTabPage } from '@/pages/FeedbackTabPage'
 import { StudentFeedbackPage } from '@/pages/StudentFeedbackPage'
 import { ParentFeedbackPage } from '@/pages/ParentFeedbackPage'
+import { CounselingTabPage } from '@/pages/CounselingTabPage'
 
 export default function App() {
   return (
@@ -44,7 +45,7 @@ export default function App() {
             <Route path="attendance" element={<AttendanceTabPage />} />
             <Route path="records" element={<RecordsTabPage />} />
             <Route path="feedback" element={<FeedbackTabPage />} />
-            <Route path="counseling" element={<PlaceholderTabPage tabName="상담" />} />
+            <Route path="counseling" element={<CounselingTabPage />} />
           </Route>
 
           {/* 학생 */}
