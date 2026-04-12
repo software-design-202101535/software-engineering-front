@@ -74,7 +74,7 @@ export function GradeTable({ grades, mode, editState }: GradeTableProps) {
           const displayScore = editVal !== undefined ? editVal : (g.score !== null ? String(g.score) : '')
           const liveScore = editVal !== undefined ? Number(editVal) : g.score
           const liveGrade =
-            liveScore !== null && !isNaN(liveScore as number) && liveScore !== 0
+            liveScore !== null && !isNaN(liveScore as number)
               ? calcGrade(liveScore as number)
               : editVal !== undefined
                 ? null
