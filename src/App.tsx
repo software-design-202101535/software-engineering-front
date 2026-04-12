@@ -16,6 +16,8 @@ import { FeedbackTabPage } from '@/pages/FeedbackTabPage'
 import { StudentFeedbackPage } from '@/pages/StudentFeedbackPage'
 import { ParentFeedbackPage } from '@/pages/ParentFeedbackPage'
 import { CounselingTabPage } from '@/pages/CounselingTabPage'
+import { StudentCounselingPage } from '@/pages/StudentCounselingPage'
+import { ParentCounselingPage } from '@/pages/ParentCounselingPage'
 
 export default function App() {
   return (
@@ -53,7 +55,7 @@ export default function App() {
             <Route path="/student/grades" element={<StudentGradesPage />} />
             <Route path="/student/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/student/feedback" element={<StudentFeedbackPage />} />
-            <Route path="/student/counseling" element={<PlaceholderTabPage tabName="상담" />} />
+            <Route path="/student/counseling" element={<StudentCounselingPage />} />
             <Route path="/student/notifications" element={<PlaceholderTabPage tabName="알림" />} />
           </Route>
 
@@ -62,7 +64,7 @@ export default function App() {
             <Route path="/parent/grades" element={<ParentGradesPage />} />
             <Route path="/parent/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/parent/feedback" element={<ParentFeedbackPage />} />
-            <Route path="/parent/counseling" element={<PlaceholderTabPage tabName="상담" />} />
+            <Route path="/parent/counseling" element={<ParentCounselingPage />} />
             <Route path="/parent/notifications" element={<PlaceholderTabPage tabName="알림" />} />
           </Route>
         </Routes>
