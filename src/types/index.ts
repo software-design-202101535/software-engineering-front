@@ -1,5 +1,8 @@
 export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT'
 
+export type ModalMode = { type: 'closed' } | { type: 'adding' } | { type: 'editing'; id: number }
+export type DeleteState = { type: 'idle' } | { type: 'confirming'; id: number }
+
 export type SchoolType =
   | 'SUNRIN_HIGH_SCHOOL'
   | 'HANGUK_MIDDLE_SCHOOL'

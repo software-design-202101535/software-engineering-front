@@ -1,4 +1,4 @@
-import { useCounselingPage, CounselingModal } from '@/features/counseling'
+import { useCounselingPage, CounselingModal, CounselingCard } from '@/features/counseling'
 
 const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 const MONTHS = [
@@ -99,104 +99,20 @@ export function CounselingTabPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {counselings.map((c) => {
-            const mine = isOwner(c.teacherId)
-
-            if (deleteState.type === 'confirming' && deleteState.id === c.id) {
-              return (
-                <div
-                  key={c.id}
-                  className="bg-error/5 border border-error/20 rounded-xl px-5 py-4 flex items-center justify-between gap-4"
-                >
-                  <p className="text-sm text-on-surface">이 상담 기록을 삭제할까요?</p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleCancelDelete}
-                      className="px-3 py-1.5 text-xs text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-colors"
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleConfirmDelete}
-                      disabled={isMutating}
-                      className="px-3 py-1.5 text-xs text-on-error bg-error rounded-lg hover:bg-error/80 transition-colors disabled:opacity-50"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              )
-            }
-
-            return (
-              <div
-                key={c.id}
-                className="bg-surface-container-lowest border border-surface-container rounded-xl px-5 py-4"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {/* 날짜 */}
-                    <span className="text-sm font-medium text-on-surface">{c.counselingDate}</span>
-
-                    {/* 교사공유 뱃지 (본인: 클릭 토글 / 타인: 정적) */}
-                    {mine ? (
-                      <button
-                        type="button"
-                        onClick={() => handleToggleShare(c.id, !c.sharedWithTeachers)}
-                        className={`px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
-                          c.sharedWithTeachers
-                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                            : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                        }`}
-                      >
-                        {c.sharedWithTeachers ? '교사공유' : '비공개'}
-                      </button>
-                    ) : (
-                      <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                        교사공유
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    {!mine && (
-                      <span className="text-xs text-on-surface-variant mr-1">{c.teacherName}</span>
-                    )}
-                    {mine && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(c.id)}
-                          className="p-1 text-on-surface-variant hover:text-primary transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleStartDelete(c.id)}
-                          className="p-1 text-on-surface-variant hover:text-error transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-sm text-on-surface whitespace-pre-wrap mb-3">{c.content}</p>
-
-                {c.nextDate && (
-                  <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[14px]">event</span>
-                    <span>다음 상담 예정</span>
-                    <span className="font-medium text-on-surface">{c.nextDate}</span>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {counselings.map((c) => (
+            <CounselingCard
+              key={c.id}
+              counseling={c}
+              isMine={isOwner(c.teacherId)}
+              deleteState={deleteState}
+              isMutating={isMutating}
+              onEdit={handleOpenEdit}
+              onStartDelete={handleStartDelete}
+              onCancelDelete={handleCancelDelete}
+              onConfirmDelete={handleConfirmDelete}
+              onToggleShare={handleToggleShare}
+            />
+          ))}
         </div>
       )}
 

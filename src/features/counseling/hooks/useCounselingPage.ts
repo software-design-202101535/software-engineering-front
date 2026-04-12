@@ -9,10 +9,16 @@ import {
   deleteCounseling,
   patchCounselingShare,
 } from '@/api/counseling'
-import type { CounselingRequest } from '@/types'
+import type { CounselingRequest, Counseling, ModalMode, DeleteState } from '@/types'
 
-type ModalMode = { type: 'closed' } | { type: 'adding' } | { type: 'editing'; id: number }
-type DeleteState = { type: 'idle' } | { type: 'confirming'; id: number }
+function toCounselingRequest(c: Counseling): CounselingRequest {
+  return {
+    counselingDate: c.counselingDate,
+    content: c.content,
+    nextDate: c.nextDate ?? '',
+    sharedWithTeachers: c.sharedWithTeachers,
+  }
+}
 
 const INITIAL_FORM: CounselingRequest = {
   counselingDate: new Date().toISOString().slice(0, 10),
@@ -103,12 +109,7 @@ export function useCounselingPage() {
   const handleOpenEdit = (counselingId: number) => {
     const c = allCounselings.find((item) => item.id === counselingId)
     if (!c) return
-    setForm({
-      counselingDate: c.counselingDate,
-      content: c.content,
-      nextDate: c.nextDate ?? '',
-      sharedWithTeachers: c.sharedWithTeachers,
-    })
+    setForm(toCounselingRequest(c))
     setModalMode({ type: 'editing', id: counselingId })
   }
 
