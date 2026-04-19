@@ -80,6 +80,7 @@ export function SignupPage() {
         await registerTeacher({
           email: fields.email,
           password: fields.password,
+          passwordConfirm: fields.passwordConfirm,
           name: fields.name,
           school: fields.school as SchoolType,
           schoolNumber: fields.schoolNumber,
@@ -92,6 +93,7 @@ export function SignupPage() {
         await registerStudent({
           email: fields.email,
           password: fields.password,
+          passwordConfirm: fields.passwordConfirm,
           name: fields.name,
           school: fields.school as SchoolType,
           schoolNumber: fields.schoolNumber,
@@ -105,6 +107,7 @@ export function SignupPage() {
         await registerParent({
           email: fields.email,
           password: fields.password,
+          passwordConfirm: fields.passwordConfirm,
           name: fields.name,
           childSchool: fields.childSchool as SchoolType,
           childSchoolNumber: fields.childSchoolNumber,
@@ -116,8 +119,11 @@ export function SignupPage() {
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string> } } }
       const data = axiosErr.response?.data
-      if (data?.errors) setFieldErrors(data.errors)
-      setError(data?.message ?? '회원가입에 실패했습니다.')
+      if (data?.errors) {
+        setFieldErrors(data.errors)
+      } else {
+        setError(data?.message ?? '회원가입에 실패했습니다.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -167,29 +173,35 @@ export function SignupPage() {
 
               {/* Terms */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={termsChecked}
-                      onChange={(e) => setTermsChecked(e.target.checked)}
-                      className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
-                    />
-                    <span className="text-sm text-on-surface-variant">[필수] 이용약관에 동의합니다</span>
-                  </label>
-                  <a href="#" className="text-xs font-semibold text-primary hover:underline underline-offset-2">보기</a>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={termsChecked}
+                        onChange={(e) => setTermsChecked(e.target.checked)}
+                        className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
+                      />
+                      <span className="text-sm text-on-surface-variant">[필수] 이용약관에 동의합니다</span>
+                    </label>
+                    <a href="#" className="text-xs font-semibold text-primary hover:underline underline-offset-2">보기</a>
+                  </div>
+                  <FieldError message={fieldErrors.termsAgreed} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={privacyChecked}
-                      onChange={(e) => setPrivacyChecked(e.target.checked)}
-                      className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
-                    />
-                    <span className="text-sm text-on-surface-variant">[필수] 개인정보 처리방침에 동의합니다</span>
-                  </label>
-                  <a href="#" className="text-xs font-semibold text-primary hover:underline underline-offset-2">보기</a>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={privacyChecked}
+                        onChange={(e) => setPrivacyChecked(e.target.checked)}
+                        className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 cursor-pointer"
+                      />
+                      <span className="text-sm text-on-surface-variant">[필수] 개인정보 처리방침에 동의합니다</span>
+                    </label>
+                    <a href="#" className="text-xs font-semibold text-primary hover:underline underline-offset-2">보기</a>
+                  </div>
+                  <FieldError message={fieldErrors.privacyAgreed} />
                 </div>
               </div>
 

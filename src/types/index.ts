@@ -72,6 +72,7 @@ export interface LoginResponse {
 export interface TeacherRegisterRequest {
   email: string
   password: string
+  passwordConfirm: string
   name: string
   school: SchoolType
   schoolNumber: string
@@ -84,6 +85,7 @@ export interface TeacherRegisterRequest {
 export interface StudentRegisterRequest {
   email: string
   password: string
+  passwordConfirm: string
   name: string
   school: SchoolType
   schoolNumber: string
@@ -97,6 +99,7 @@ export interface StudentRegisterRequest {
 export interface ParentRegisterRequest {
   email: string
   password: string
+  passwordConfirm: string
   name: string
   childSchool: SchoolType
   childSchoolNumber: string
