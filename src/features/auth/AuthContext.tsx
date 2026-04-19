@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import type { User, LoginRequest } from '@/types'
+import type { User, LoginRequest, LoginResponse } from '@/types'
 import { login as loginApi, logout as logoutApi } from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
@@ -26,9 +26,14 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
   const login = useCallback(async (data: LoginRequest) => {
     const res = await loginApi(data)
+    const user: User = {
+      ...res.user,
+      ...(res.studentId != null ? { studentId: res.studentId } : {}),
+      ...(res.children != null ? { children: res.children } : {}),
+    }
     setAccessToken(res.accessToken)
-    localStorage.setItem('user', JSON.stringify(res.user))
-    setState({ user: res.user, isAuthenticated: true })
+    localStorage.setItem('user', JSON.stringify(user))
+    setState({ user, isAuthenticated: true })
   }, [])
 
   const logout = useCallback(async () => {

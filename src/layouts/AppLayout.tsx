@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useQueries } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
-import { fetchStudent } from '@/api/students'
-import type { UserRole } from '@/types'
+import type { UserRole, ChildSummary } from '@/types'
 
 interface NavItem {
   to: string
@@ -31,22 +29,14 @@ const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
 }
 
 function ChildDropdown({
-  childIds,
+  children,
   selectedChildId,
   onSelect,
 }: {
-  childIds: number[]
+  children: ChildSummary[]
   selectedChildId: number
   onSelect: (id: number) => void
 }) {
-  const results = useQueries({
-    queries: childIds.map((id) => ({
-      queryKey: ['student', id],
-      queryFn: () => fetchStudent(id),
-    })),
-  })
-  const names = results.map((r, i) => r.data?.name ?? `자녀 ${childIds[i]}`)
-
   return (
     <div className="px-3 pt-2 pb-3 border-b border-surface-container">
       <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">자녀 선택</p>
@@ -55,8 +45,8 @@ function ChildDropdown({
         onChange={(e) => onSelect(Number(e.target.value))}
         className="w-full px-3 py-2 text-sm rounded-lg bg-surface-container border border-outline-variant text-on-surface focus:outline-none focus:border-primary"
       >
-        {childIds.map((id, i) => (
-          <option key={id} value={id}>{names[i]}</option>
+        {children.map((child) => (
+          <option key={child.studentId} value={child.studentId}>{child.name}</option>
         ))}
       </select>
     </div>
@@ -68,8 +58,8 @@ export function AppLayout() {
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-  const childIds = user?.role === 'PARENT' ? (user?.childStudentIds ?? []) : []
-  const [selectedChildId, setSelectedChildId] = useState<number>(childIds[0] ?? 0)
+  const children = user?.role === 'PARENT' ? (user?.children ?? []) : []
+  const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.studentId ?? 0)
 
   const handleLogout = async () => {
     await logout()
@@ -99,9 +89,9 @@ export function AppLayout() {
         </div>
 
         {/* 학부모 자녀 선택 */}
-        {user?.role === 'PARENT' && childIds.length > 1 && isSidebarOpen && (
+        {user?.role === 'PARENT' && children.length > 1 && isSidebarOpen && (
           <ChildDropdown
-            childIds={childIds}
+            children={children}
             selectedChildId={selectedChildId}
             onSelect={setSelectedChildId}
           />

@@ -41,16 +41,21 @@ export const SUBJECT_LABEL: Record<SubjectCode, string> = {
   TECHNOLOGY: '기술', CHINESE_CHARACTERS: '한문', SECOND_FOREIGN_LANGUAGE: '제2외국어',
 }
 
+export interface ChildSummary {
+  studentId: number
+  name: string
+}
+
 export interface User {
   id: number
   email: string
   name: string
   role: UserRole
   phone?: string
-  grade?: number              // TEACHER 역할: 담당 학년
-  classNum?: number           // TEACHER 역할: 담당 반
-  studentId?: number          // STUDENT 역할: 본인 학생 레코드 ID
-  childStudentIds?: number[]  // PARENT 역할: 자녀 학생 레코드 ID 목록
+  grade?: number
+  classNum?: number
+  studentId?: number
+  children?: ChildSummary[]
 }
 
 export type LoginRequest =
@@ -59,6 +64,8 @@ export type LoginRequest =
 
 export interface LoginResponse {
   accessToken: string
+  studentId?: number
+  children?: ChildSummary[]
   user: User
 }
 
