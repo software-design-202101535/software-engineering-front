@@ -21,14 +21,17 @@ export const client = axios.create({
   withCredentials: true,
 })
 
+const PUBLIC_PATHS = ['/api/auth/login/school', '/api/auth/login/email', '/api/auth/refresh']
+
 client.interceptors.request.use((config) => {
-  if (accessToken) {
+  if (accessToken && !PUBLIC_PATHS.some(p => config.url?.startsWith(p))) {
     config.headers.Authorization = `Bearer ${accessToken}`
   }
   return config
 })
 
 async function handleTokenRefresh(originalRequest: InternalAxiosRequestConfig) {
+  setAccessToken(null)
   const { data } = await axios.post(
     `${BASE_URL}/api/auth/refresh`,
     null,
@@ -49,7 +52,8 @@ client.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isPublic = PUBLIC_PATHS.some(p => originalRequest.url?.startsWith(p))
+    if (error.response?.status === 401 && !originalRequest._retry && !isPublic) {
       originalRequest._retry = true
       try {
         return await handleTokenRefresh(originalRequest)
