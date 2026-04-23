@@ -64,9 +64,12 @@ export type LoginRequest =
 
 export interface LoginResponse {
   accessToken: string
+  userId: number
+  email: string
+  name: string
+  role: UserRole
   studentId?: number
   children?: ChildSummary[]
-  user: User
 }
 
 export interface TeacherRegisterRequest {
@@ -125,7 +128,6 @@ export interface Student {
   phone?: string
   parentPhone?: string
   address?: string
-  userId?: number
 }
 
 export interface Grade {
@@ -154,7 +156,6 @@ export type FeedbackCategory = 'GRADE' | 'BEHAVIOR' | 'ATTITUDE' | 'ATTENDANCE' 
 
 export interface Feedback {
   id: number
-  studentId: number
   teacherId: number
   teacherName: string
   category: FeedbackCategory
@@ -162,8 +163,6 @@ export interface Feedback {
   content: string
   studentVisible: boolean
   parentVisible: boolean
-  createdAt: string
-  updatedAt: string
 }
 
 export interface FeedbackRequest {

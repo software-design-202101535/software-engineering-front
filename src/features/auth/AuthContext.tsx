@@ -27,7 +27,10 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   const login = useCallback(async (data: LoginRequest) => {
     const res = await loginApi(data)
     const user: User = {
-      ...res.user,
+      id: res.userId,
+      email: res.email,
+      name: res.name,
+      role: res.role,
       ...(res.studentId != null ? { studentId: res.studentId } : {}),
       ...(res.children != null ? { children: res.children } : {}),
     }
