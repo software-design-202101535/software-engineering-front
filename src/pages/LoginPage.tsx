@@ -166,21 +166,7 @@ export function LoginPage() {
                 </div>
               </div>
 
-              {/* 기억하기 - 교사/학생만 */}
-              {activeRole !== 'PARENT' && (
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    className="w-4 h-4 rounded-sm border-outline-variant text-primary focus:ring-primary/20"
-                  />
-                  <label htmlFor="remember" className="text-xs text-on-surface-variant">
-                    {activeRole === 'TEACHER' ? '사번' : '학번'} 기억하기
-                  </label>
-                </div>
-              )}
-
-              {error && <p className="text-sm text-error">{error}</p>}
+{error && <p className="text-sm text-error">{error}</p>}
 
               <button
                 type="submit"
