@@ -13,6 +13,7 @@ export function useLoginForm() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const { login } = useAuth()
@@ -31,6 +32,7 @@ export function useLoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
     setIsLoading(true)
     try {
       if (activeRole === 'PARENT') {
@@ -48,8 +50,13 @@ export function useLoginForm() {
       }
       navigate(user ? roleRoutes[user.role] : '/dashboard')
     } catch (err) {
-      const axiosErr = err as { response?: { data?: { message?: string } } }
-      setError(axiosErr.response?.data?.message ?? '로그인에 실패하였습니다.')
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string> } } }
+      const data = axiosErr.response?.data
+      if (data?.errors) {
+        setFieldErrors(data.errors)
+      } else {
+        setError(data?.message ?? '로그인에 실패하였습니다.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -63,6 +70,7 @@ export function useLoginForm() {
     password,
     showPassword,
     error,
+    fieldErrors,
     isLoading,
     setSchool,
     setSchoolNumber,

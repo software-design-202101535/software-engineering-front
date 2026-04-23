@@ -20,6 +20,7 @@ export function LoginPage() {
     password,
     showPassword,
     error,
+    fieldErrors,
     isLoading,
     setSchool,
     setSchoolNumber,
@@ -88,6 +89,7 @@ export function LoginPage() {
                       </div>
                     </div>
                   </div>
+                  {fieldErrors.school && <p className="text-xs text-error mt-1 ml-1">{fieldErrors.school}</p>}
 
                   {/* 사번 / 학번 */}
                   <div className="space-y-1.5">
@@ -108,6 +110,7 @@ export function LoginPage() {
                         className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:ring-0 focus:border-primary pl-11 pr-4 py-3 text-sm text-on-surface placeholder:text-outline-variant transition-all rounded-t-lg"
                       />
                     </div>
+                    {fieldErrors.schoolNumber && <p className="text-xs text-error mt-1 ml-1">{fieldErrors.schoolNumber}</p>}
                   </div>
                 </>
               ) : (
@@ -130,6 +133,7 @@ export function LoginPage() {
                       className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:ring-0 focus:border-primary pl-11 pr-4 py-3 text-sm text-on-surface placeholder:text-outline-variant transition-all rounded-t-lg"
                     />
                   </div>
+                  {fieldErrors.email && <p className="text-xs text-error mt-1 ml-1">{fieldErrors.email}</p>}
                 </div>
               )}
 
@@ -164,9 +168,8 @@ export function LoginPage() {
                     </span>
                   </button>
                 </div>
+                {error && <p className="text-xs text-error mt-1 ml-1">{error}</p>}
               </div>
-
-{error && <p className="text-sm text-error">{error}</p>}
 
               <button
                 type="submit"
