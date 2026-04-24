@@ -24,7 +24,7 @@ export function FeedbackTabPage() {
   } = useFeedbackPage()
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-3xl mx-auto">
       {/* 카테고리 필터 + 작성 버튼 */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-1 bg-surface-container rounded-lg p-0.5">

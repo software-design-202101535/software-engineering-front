@@ -28,7 +28,7 @@ export function ParentGradesPage() {
   const radarData = grades.map((g) => ({ subject: SUBJECT_LABEL[g.subject] ?? g.subject, score: g.score }))
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="font-headline text-2xl font-bold text-on-surface">자녀 성적</h1>
         <p className="text-sm text-on-surface-variant mt-1">자녀의 과목별 성적을 확인할 수 있습니다.</p>

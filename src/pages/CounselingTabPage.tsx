@@ -33,7 +33,7 @@ export function CounselingTabPage() {
   } = useCounselingPage()
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-3xl mx-auto">
       {/* 검색 + 필터 + 추가 버튼 */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-48">

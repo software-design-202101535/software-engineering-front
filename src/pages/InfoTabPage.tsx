@@ -28,7 +28,7 @@ export function InfoTabPage() {
   }
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-6 max-w-2xl mx-auto">
       <div className="bg-surface-container-lowest rounded-xl border border-surface-container">
         {/* 헤더 */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-surface-container">

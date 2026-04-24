@@ -45,7 +45,7 @@ export function StudentsPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="font-headline text-2xl font-bold text-on-surface">학생 관리</h1>
         <p className="text-sm text-on-surface-variant mt-1">
