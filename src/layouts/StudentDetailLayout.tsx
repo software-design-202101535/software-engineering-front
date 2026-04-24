@@ -78,13 +78,13 @@ export function StudentDetailLayout() {
       </div>
 
       {/* 탭 바 */}
-      <div className="bg-surface-container-lowest border-b border-surface-container px-6 flex gap-0">
+      <div className="bg-surface-container-lowest border-b border-surface-container px-6 flex gap-0 overflow-x-auto">
         {TABS.map((tab) => (
           <NavLink
             key={tab.path}
             to={`/students/${studentId}/${tab.path}`}
             className={({ isActive }) =>
-              `px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              `shrink-0 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                 isActive
                   ? 'border-primary text-primary'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'

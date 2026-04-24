@@ -77,7 +77,7 @@ export function AttendanceTabPage() {
       </div>
 
       {/* 요약 카드 */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
           { label: '결석', value: summary.absent, color: 'text-red-500' },
           { label: '지각', value: summary.late, color: 'text-orange-500' },
