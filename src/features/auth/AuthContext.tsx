@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import type { User, LoginRequest, LoginResponse } from '@/types'
+import type { User, LoginRequest } from '@/types'
 import { login as loginApi, logout as logoutApi } from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
