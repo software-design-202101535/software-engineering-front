@@ -68,18 +68,35 @@ export function AppLayout() {
 
   const navItems = (user?.role ? NAV_ITEMS[user.role] : undefined) ?? []
 
+  const handleNavClick = () => {
+    if (window.innerWidth < 768) setIsSidebarOpen(false)
+  }
+
+  const sidebarClass = [
+    'fixed inset-y-0 left-0 z-40 w-60 bg-surface-container-low flex flex-col transition-all duration-200 shrink-0',
+    isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+    'md:relative md:inset-auto md:z-auto md:translate-x-0',
+    isSidebarOpen ? 'md:w-60' : 'md:w-16',
+  ].join(' ')
+
   return (
     <div className="min-h-screen bg-surface flex">
+      {/* 모바일 백드롭 */}
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside
-        className={`${isSidebarOpen ? 'w-60' : 'w-16'} bg-surface-container-low flex flex-col transition-all duration-200 shrink-0`}
-      >
+      <aside className={sidebarClass}>
         {/* Brand */}
         <div className="h-16 flex items-center px-4 gap-3">
           <button
             type="button"
             onClick={() => setIsSidebarOpen((v) => !v)}
-            className="text-on-surface-variant hover:text-primary transition-colors"
+            className="hidden md:block text-on-surface-variant hover:text-primary transition-colors"
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
@@ -103,6 +120,7 @@ export function AppLayout() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
@@ -154,7 +172,14 @@ export function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="h-16 bg-surface-container-lowest border-b border-surface-container px-6 flex items-center justify-between shrink-0">
-          <div />
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen((v) => !v)}
+            className="md:hidden text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+          <div className="hidden md:block" />
           <div className="flex items-center gap-4">
             <button className="relative text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined">notifications</span>
