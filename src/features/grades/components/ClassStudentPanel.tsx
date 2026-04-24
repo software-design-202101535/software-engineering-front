@@ -34,7 +34,7 @@ export function ClassStudentPanel({
   }
 
   return (
-    <div className="w-52 shrink-0 flex flex-col border-r border-surface-container bg-surface-container-low">
+    <div className="hidden md:flex w-52 shrink-0 flex-col border-r border-surface-container bg-surface-container-low">
       {/* 패널 헤더 */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-surface-container">
         <div>

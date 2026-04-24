@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useGradePage } from '@/features/grades'
 import {
   SemesterSelector,
@@ -48,6 +49,8 @@ export function GradesTabPage() {
     handleToggleSelecting,
   } = useGradePage()
 
+  const navigate = useNavigate()
+
   return (
     <div className="flex h-full min-h-0">
       {/* 좌측: 반 학생 목록 */}
@@ -64,6 +67,17 @@ export function GradesTabPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* 컨트롤 바 */}
         <div className="px-6 py-3 flex items-center gap-3 flex-wrap border-b border-surface-container bg-surface-container-lowest">
+          {/* 모바일 학생 선택 */}
+          <select
+            className="md:hidden w-full px-3 py-1.5 text-sm bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-primary"
+            value={sid}
+            onChange={(e) => navigate(`/students/${e.target.value}/grades`)}
+          >
+            {classStudents.map((s) => (
+              <option key={s.id} value={s.id}>{s.number}번 {s.name}</option>
+            ))}
+          </select>
+
           <SemesterSelector
             semester={semester}
             examType={examType}
@@ -72,7 +86,7 @@ export function GradesTabPage() {
           />
 
           {/* 과목 일괄 적용 드롭다운 */}
-          <div className="relative">
+          <div className="hidden md:block relative">
             <button
               type="button"
               onClick={() => setIsApplyOpen((v) => !v)}
