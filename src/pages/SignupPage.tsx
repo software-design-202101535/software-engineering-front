@@ -26,12 +26,10 @@ interface FormFields {
   password: string
   passwordConfirm: string
   school: SchoolType | ''
-  schoolNumber: string
   grade: string
   classNum: string
   number: string
-  childSchool: SchoolType | ''
-  childSchoolNumber: string
+  childEmail: string
 }
 
 const INITIAL_FIELDS: FormFields = {
@@ -40,12 +38,10 @@ const INITIAL_FIELDS: FormFields = {
   password: '',
   passwordConfirm: '',
   school: '',
-  schoolNumber: '',
   grade: '',
   classNum: '',
   number: '',
-  childSchool: '',
-  childSchoolNumber: '',
+  childEmail: '',
 }
 
 export function SignupPage() {
@@ -83,7 +79,6 @@ export function SignupPage() {
           passwordConfirm: fields.passwordConfirm,
           name: fields.name,
           school: fields.school as SchoolType,
-          schoolNumber: fields.schoolNumber,
           ...(fields.grade ? { grade: Number(fields.grade) } : {}),
           ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
           termsAgreed: termsChecked,
@@ -96,7 +91,6 @@ export function SignupPage() {
           passwordConfirm: fields.passwordConfirm,
           name: fields.name,
           school: fields.school as SchoolType,
-          schoolNumber: fields.schoolNumber,
           ...(fields.grade ? { grade: Number(fields.grade) } : {}),
           ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
           ...(fields.number ? { number: Number(fields.number) } : {}),
@@ -109,8 +103,7 @@ export function SignupPage() {
           password: fields.password,
           passwordConfirm: fields.passwordConfirm,
           name: fields.name,
-          childSchool: fields.childSchool as SchoolType,
-          childSchoolNumber: fields.childSchoolNumber,
+          childEmail: fields.childEmail,
           termsAgreed: termsChecked,
           privacyAgreed: privacyChecked,
         })
@@ -290,17 +283,10 @@ function TeacherForm({ fields, setField, fieldErrors }: FormProps) {
           <SchoolSelect value={fields.school} onChange={setField('school')} error={fieldErrors.school} />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>이메일</label>
-          <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
-          <FieldError message={fieldErrors.email} />
-        </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>사번/교원번호</label>
-          <input className={INPUT_CLASS} type="text" placeholder="예: T20240001" value={fields.schoolNumber} onChange={setField('schoolNumber')} />
-          <FieldError message={fieldErrors.schoolNumber} />
-        </div>
+      <div className="space-y-1">
+        <label className={LABEL_CLASS}>이메일</label>
+        <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
+        <FieldError message={fieldErrors.email} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-1">
@@ -343,17 +329,10 @@ function StudentForm({ fields, setField, fieldErrors }: FormProps) {
           <SchoolSelect value={fields.school} onChange={setField('school')} error={fieldErrors.school} />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>이메일</label>
-          <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
-          <FieldError message={fieldErrors.email} />
-        </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>학번</label>
-          <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" value={fields.schoolNumber} onChange={setField('schoolNumber')} />
-          <FieldError message={fieldErrors.schoolNumber} />
-        </div>
+      <div className="space-y-1">
+        <label className={LABEL_CLASS}>이메일</label>
+        <input className={INPUT_CLASS} type="text" placeholder="example@school.kr" autoComplete="email" value={fields.email} onChange={setField('email')} />
+        <FieldError message={fieldErrors.email} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-1">
@@ -416,18 +395,12 @@ function ParentForm({ fields, setField, fieldErrors }: FormProps) {
       <div className="space-y-4 pt-2">
         <div>
           <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">자녀 정보</p>
-          <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 학교와 학번을 입력하면 자동으로 연결됩니다.</p>
+          <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 이메일을 입력하면 자동으로 연결됩니다.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <label className={LABEL_CLASS}>자녀 소속 학교</label>
-            <SchoolSelect value={fields.childSchool} onChange={setField('childSchool')} error={fieldErrors.childSchool} />
-          </div>
-          <div className="space-y-1">
-            <label className={LABEL_CLASS}>자녀 학번</label>
-            <input className={INPUT_CLASS} type="text" placeholder="예: 202401001" value={fields.childSchoolNumber} onChange={setField('childSchoolNumber')} />
-            <FieldError message={fieldErrors.childSchoolNumber} />
-          </div>
+        <div className="space-y-1">
+          <label className={LABEL_CLASS}>자녀 이메일</label>
+          <input className={INPUT_CLASS} type="text" placeholder="자녀 계정 이메일" value={fields.childEmail} onChange={setField('childEmail')} />
+          <FieldError message={fieldErrors.childEmail} />
         </div>
       </div>
     </>

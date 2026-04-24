@@ -58,9 +58,10 @@ export interface User {
   children?: ChildSummary[]
 }
 
-export type LoginRequest =
-  | { role: 'TEACHER' | 'STUDENT'; school: SchoolType; schoolNumber: string; password: string }
-  | { role: 'PARENT'; email: string; password: string }
+export interface LoginRequest {
+  email: string
+  password: string
+}
 
 export interface LoginResponse {
   accessToken: string
@@ -78,7 +79,6 @@ export interface TeacherRegisterRequest {
   passwordConfirm: string
   name: string
   school: SchoolType
-  schoolNumber: string
   grade?: number
   classNum?: number
   termsAgreed: boolean
@@ -91,7 +91,6 @@ export interface StudentRegisterRequest {
   passwordConfirm: string
   name: string
   school: SchoolType
-  schoolNumber: string
   grade?: number
   classNum?: number
   number?: number
@@ -104,8 +103,7 @@ export interface ParentRegisterRequest {
   password: string
   passwordConfirm: string
   name: string
-  childSchool: SchoolType
-  childSchoolNumber: string
+  childEmail: string
   termsAgreed: boolean
   privacyAgreed: boolean
 }

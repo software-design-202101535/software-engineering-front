@@ -1,14 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
-import type { UserRole, SchoolType } from '@/types'
-
-export type LoginRole = 'TEACHER' | 'STUDENT' | 'PARENT'
+import type { UserRole } from '@/types'
 
 export function useLoginForm() {
-  const [activeRole, setActiveRole] = useState<LoginRole>('TEACHER')
-  const [school, setSchool] = useState<SchoolType | ''>('')
-  const [schoolNumber, setSchoolNumber] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,27 +14,13 @@ export function useLoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleRoleChange = (role: LoginRole) => {
-    setActiveRole(role)
-    setSchool('')
-    setSchoolNumber('')
-    setEmail('')
-    setPassword('')
-    setError('')
-    setShowPassword(false)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setFieldErrors({})
     setIsLoading(true)
     try {
-      if (activeRole === 'PARENT') {
-        await login({ role: 'PARENT', email, password })
-      } else {
-        await login({ role: activeRole, school: school as SchoolType, schoolNumber, password })
-      }
+      await login({ email, password })
       const saved = localStorage.getItem('user')
       const user = saved ? (JSON.parse(saved) as { role: UserRole }) : null
       const roleRoutes: Record<UserRole, string> = {
@@ -63,20 +44,14 @@ export function useLoginForm() {
   }
 
   return {
-    activeRole,
-    school,
-    schoolNumber,
     email,
     password,
     showPassword,
     error,
     fieldErrors,
     isLoading,
-    setSchool,
-    setSchoolNumber,
     setEmail,
     setPassword,
-    handleRoleChange,
     handleSubmit,
     toggleShowPassword: () => setShowPassword((v) => !v),
   }
