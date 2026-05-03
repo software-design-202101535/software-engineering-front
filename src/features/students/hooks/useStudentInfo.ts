@@ -6,6 +6,10 @@ import type { UpdateStudentRequest } from '@/types'
 
 type Mode = 'read' | 'edit'
 
+type AxiosErrorShape = {
+  response?: { data?: { errors?: Record<string, string>; message?: string } }
+}
+
 export function useStudentInfo() {
   const { studentId } = useParams<{ studentId: string }>()
   const sid = Number(studentId)
@@ -13,6 +17,7 @@ export function useStudentInfo() {
 
   const [mode, setMode] = useState<Mode>('read')
   const [form, setForm] = useState<UpdateStudentRequest>({ name: '' })
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { data: student, isLoading } = useQuery({
     queryKey: ['student', sid],
@@ -24,7 +29,16 @@ export function useStudentInfo() {
     mutationFn: (body: UpdateStudentRequest) => updateStudent(sid, body),
     onSuccess: (updated) => {
       queryClient.setQueryData(['student', sid], updated)
+      setFieldErrors({})
       setMode('read')
+    },
+    onError: (err: unknown) => {
+      const data = (err as AxiosErrorShape).response?.data
+      if (data?.errors) {
+        setFieldErrors(data.errors)
+      } else {
+        setFieldErrors({ _global: data?.message ?? '저장에 실패했습니다. 다시 시도해 주세요.' })
+      }
     },
   })
 
@@ -37,10 +51,12 @@ export function useStudentInfo() {
       parentPhone: student.parentPhone ?? '',
       address: student.address ?? '',
     })
+    setFieldErrors({})
     setMode('edit')
   }
 
   const handleCancel = () => {
+    setFieldErrors({})
     setMode('read')
   }
 
@@ -51,6 +67,9 @@ export function useStudentInfo() {
 
   const handleChange = (field: keyof UpdateStudentRequest, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
   return {
@@ -59,6 +78,7 @@ export function useStudentInfo() {
     mode,
     form,
     isSaving: mutation.isPending,
+    fieldErrors,
     handleEdit,
     handleCancel,
     handleSave,
