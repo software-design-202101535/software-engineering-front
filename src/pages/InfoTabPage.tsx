@@ -1,15 +1,15 @@
 import { useStudentInfo } from '@/features/students'
 
-const FIELD_LABELS: Array<{ key: 'name' | 'birthDate' | 'phone' | 'parentPhone' | 'address'; label: string; readOnly?: boolean }> = [
+const FIELD_LABELS: Array<{ key: 'name' | 'birthDate' | 'phone' | 'parentPhone' | 'address'; label: string; inputType?: string }> = [
   { key: 'name', label: '이름' },
-  { key: 'birthDate', label: '생년월일' },
+  { key: 'birthDate', label: '생년월일', inputType: 'date' },
   { key: 'phone', label: '연락처' },
   { key: 'parentPhone', label: '학부모 연락처' },
   { key: 'address', label: '주소' },
 ]
 
 export function InfoTabPage() {
-  const { student, isLoading, mode, form, isSaving, handleEdit, handleCancel, handleSave, handleChange } = useStudentInfo()
+  const { student, isLoading, mode, form, isSaving, fieldErrors, handleEdit, handleCancel, handleSave, handleChange } = useStudentInfo()
 
   if (isLoading) {
     return (
@@ -84,20 +84,34 @@ export function InfoTabPage() {
           </div>
         </div>
 
+        {/* 전역 에러 메시지 */}
+        {fieldErrors._global && (
+          <div className="mx-6 mt-4 px-4 py-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+            {fieldErrors._global}
+          </div>
+        )}
+
         {/* 수정 가능 필드 */}
         <div className="px-6 py-4 grid grid-cols-2 gap-x-8 gap-y-4">
-          {FIELD_LABELS.map(({ key, label }) => (
+          {FIELD_LABELS.map(({ key, label, inputType = 'text' }) => (
             <div key={key} className={key === 'address' ? 'col-span-2' : ''}>
               <p className="text-xs text-on-surface-variant mb-1">{label}</p>
               {mode === 'read' ? (
                 <p className="text-sm text-on-surface">{student[key] ?? '—'}</p>
               ) : (
-                <input
-                  type="text"
-                  value={form[key] ?? ''}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  className="w-full px-3 py-1.5 text-sm bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-primary transition-colors"
-                />
+                <>
+                  <input
+                    type={inputType}
+                    value={form[key] ?? ''}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    className={`w-full px-3 py-1.5 text-sm bg-surface-container border rounded-lg focus:outline-none transition-colors ${
+                      fieldErrors[key] ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'
+                    }`}
+                  />
+                  {fieldErrors[key] && (
+                    <p className="text-xs text-error mt-1">{fieldErrors[key]}</p>
+                  )}
+                </>
               )}
             </div>
           ))}
