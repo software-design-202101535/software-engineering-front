@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { useGradePage } from './useGradePage'
 import type { ReactNode } from 'react'
-import type { Grade, StudentSummary, BatchGradeRequest } from '@/types'
+import type { Grade, StudentSummary } from '@/types'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 const url = (path: string) => `${BASE}${path}`
@@ -151,10 +151,10 @@ describe('handleSave', () => {
   })
 
   it('수정된 점수가 있으면 update payload로 mutation을 호출하고 read 모드로 전환한다', async () => {
-    let capturedBody: BatchGradeRequest | null = null
+    const spy = vi.fn()
     server.use(
       http.put(url('/api/students/1/grades/batch'), async ({ request }) => {
-        capturedBody = await request.json() as BatchGradeRequest
+        spy(await request.json())
         return HttpResponse.json([])
       }),
     )
@@ -162,15 +162,17 @@ describe('handleSave', () => {
     await waitFor(() => expect(result.current.grades).toHaveLength(1))
     act(() => { result.current.handleScoreChange(1, '95') })
     await act(async () => { await result.current.handleSave() })
-    expect(capturedBody?.update).toEqual([{ id: 1, subject: 'MATH', score: 95 }])
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ update: [{ id: 1, subject: 'MATH', score: 95 }] }),
+    )
     expect(result.current.tableMode).toBe('read')
   })
 
   it('신규 항목이 있으면 create payload를 포함한다', async () => {
-    let capturedBody: BatchGradeRequest | null = null
+    const spy = vi.fn()
     server.use(
       http.put(url('/api/students/1/grades/batch'), async ({ request }) => {
-        capturedBody = await request.json() as BatchGradeRequest
+        spy(await request.json())
         return HttpResponse.json([])
       }),
     )
@@ -181,7 +183,9 @@ describe('handleSave', () => {
     })
     act(() => { result.current.handleConfirmAdd() })
     await act(async () => { await result.current.handleSave() })
-    expect(capturedBody?.create).toEqual([{ subject: 'ENGLISH', score: 88 }])
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ create: [{ subject: 'ENGLISH', score: 88 }] }),
+    )
   })
 })
 

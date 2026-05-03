@@ -206,17 +206,17 @@ describe('handleConfirmDelete', () => {
 
 describe('handleToggleShare', () => {
   it('PATCH를 올바른 payload로 호출한다', async () => {
-    let capturedBody: { sharedWithTeachers: boolean } | null = null
+    const spy = vi.fn()
     server.use(
       http.patch(url('/api/students/1/counselings/10/share'), async ({ request }) => {
-        capturedBody = await request.json() as { sharedWithTeachers: boolean }
+        spy(await request.json())
         return HttpResponse.json({ ...fakeCounseling, sharedWithTeachers: true })
       }),
     )
     const { result } = renderHook(() => useCounselingPage(), { wrapper: makeWrapper() })
     act(() => { result.current.handleToggleShare(10, true) })
-    await waitFor(() => expect(capturedBody).not.toBeNull())
-    expect(capturedBody).toEqual({ sharedWithTeachers: true })
+    await waitFor(() => expect(spy).toHaveBeenCalled())
+    expect(spy).toHaveBeenCalledWith({ sharedWithTeachers: true })
   })
 })
 

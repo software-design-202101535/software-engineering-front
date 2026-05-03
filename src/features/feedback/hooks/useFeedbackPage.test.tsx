@@ -211,17 +211,17 @@ describe('handleConfirmDelete', () => {
 
 describe('handleToggleVisibility', () => {
   it('PATCH를 올바른 payload로 호출한다', async () => {
-    let capturedBody: { studentVisible: boolean; parentVisible: boolean } | null = null
+    const spy = vi.fn()
     server.use(
       http.patch(url('/api/students/1/feedbacks/10/visibility'), async ({ request }) => {
-        capturedBody = await request.json() as { studentVisible: boolean; parentVisible: boolean }
+        spy(await request.json())
         return HttpResponse.json({ ...fakeFeedback, studentVisible: true, parentVisible: true })
       }),
     )
     const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })
     act(() => { result.current.handleToggleVisibility(10, true, true) })
-    await waitFor(() => expect(capturedBody).not.toBeNull())
-    expect(capturedBody).toEqual({ studentVisible: true, parentVisible: true })
+    await waitFor(() => expect(spy).toHaveBeenCalled())
+    expect(spy).toHaveBeenCalledWith({ studentVisible: true, parentVisible: true })
   })
 })
 
