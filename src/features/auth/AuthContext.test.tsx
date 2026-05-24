@@ -106,6 +106,80 @@ describe('login', () => {
   })
 })
 
+describe('loginWithOAuth', () => {
+  const oauthUser = { id: 7, email: 'kakao@test.com', name: '카카오유저', role: 'TEACHER' as const }
+  const oauthResponse = { accessToken: 'oauth-access', refreshToken: 'oauth-refresh', user: oauthUser }
+
+  it('성공 시 accessToken과 user를 저장하고 인증 상태로 만든다', async () => {
+    server.use(http.post(url('/api/auth/oauth/token'), () => HttpResponse.json(oauthResponse)))
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => { await result.current.loginWithOAuth('code-123') })
+    expect(getAccessToken()).toBe('oauth-access')
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(result.current.user?.email).toBe('kakao@test.com')
+  })
+
+  it('성공 시 user 정보를 localStorage에 저장한다', async () => {
+    server.use(http.post(url('/api/auth/oauth/token'), () => HttpResponse.json(oauthResponse)))
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => { await result.current.loginWithOAuth('code-123') })
+    const saved = JSON.parse(localStorage.getItem('user') ?? '{}')
+    expect(saved.email).toBe('kakao@test.com')
+    expect(saved.role).toBe('TEACHER')
+  })
+
+  it('반환값으로 user를 돌려준다', async () => {
+    server.use(http.post(url('/api/auth/oauth/token'), () => HttpResponse.json(oauthResponse)))
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    let returned
+    await act(async () => { returned = await result.current.loginWithOAuth('code-123') })
+    expect(returned).toEqual(oauthUser)
+  })
+})
+
+describe('completeOAuth', () => {
+  const oauthUser = { id: 9, email: 'new@test.com', name: '신규유저', role: 'STUDENT' as const, studentId: 42 }
+  const oauthResponse = { accessToken: 'complete-access', refreshToken: 'complete-refresh', user: oauthUser }
+
+  it('성공 시 accessToken과 user를 저장하고 인증 상태로 만든다', async () => {
+    server.use(http.post(url('/api/auth/oauth/complete'), () => HttpResponse.json(oauthResponse)))
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {
+      await result.current.completeOAuth({
+        authCode: 'code-456',
+        role: 'STUDENT',
+        termsAgreed: true,
+        privacyAgreed: true,
+        studentInfo: { school: 'SUNRIN_HIGH_SCHOOL' },
+      })
+    })
+    expect(getAccessToken()).toBe('complete-access')
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(result.current.user?.studentId).toBe(42)
+  })
+
+  it('실패 시 인증 상태를 유지하지 않고 에러를 던진다', async () => {
+    server.use(
+      http.post(url('/api/auth/oauth/complete'), () =>
+        HttpResponse.json({ code: 'OAUTH_INVALID_AUTHCODE' }, { status: 400 }),
+      ),
+    )
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await expect(
+      act(async () => {
+        await result.current.completeOAuth({
+          authCode: 'expired',
+          role: 'TEACHER',
+          termsAgreed: true,
+          privacyAgreed: true,
+          teacherInfo: { school: 'SUNRIN_HIGH_SCHOOL' },
+        })
+      }),
+    ).rejects.toBeDefined()
+    expect(result.current.isAuthenticated).toBe(false)
+  })
+})
+
 describe('logout', () => {
   it('토큰, localStorage.user, 인증 상태를 모두 초기화한다', async () => {
     server.use(
