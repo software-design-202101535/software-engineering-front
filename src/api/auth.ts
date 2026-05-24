@@ -4,6 +4,8 @@ import type {
   LoginResponse,
   OAuthTokenResponse,
   OAuthCompleteRequest,
+  KakaoLoginResponse,
+  KakaoRegisterRequest,
   TeacherRegisterRequest,
   StudentRegisterRequest,
   ParentRegisterRequest,
@@ -21,6 +23,16 @@ export async function loginWithOAuthCode(authCode: string): Promise<OAuthTokenRe
 
 export async function completeOAuthSignup(payload: OAuthCompleteRequest): Promise<OAuthTokenResponse> {
   const res = await client.post<OAuthTokenResponse>('/api/auth/oauth/complete', payload)
+  return res.data
+}
+
+export async function oauthKakaoLogin(code: string): Promise<KakaoLoginResponse> {
+  const res = await client.post<KakaoLoginResponse>('/api/auth/oauth/kakao', { code })
+  return res.data
+}
+
+export async function oauthKakaoRegister(payload: KakaoRegisterRequest): Promise<LoginResponse> {
+  const res = await client.post<LoginResponse>('/api/auth/oauth/kakao/register', payload)
   return res.data
 }
 

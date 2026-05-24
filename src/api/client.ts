@@ -27,6 +27,8 @@ const PUBLIC_PATHS = [
   '/api/auth/refresh',
   '/api/auth/oauth/token',
   '/api/auth/oauth/complete',
+  '/api/auth/oauth/kakao',
+  '/api/auth/oauth/kakao/register',
 ]
 
 client.interceptors.request.use((config) => {
