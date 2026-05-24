@@ -4,6 +4,7 @@ import { AppLayout } from '@/layouts/AppLayout'
 import { StudentDetailLayout } from '@/layouts/StudentDetailLayout'
 import { LoginPage } from '@/pages/LoginPage'
 import { SignupPage } from '@/pages/SignupPage'
+import { OAuthResultPage } from '@/pages/OAuthResultPage'
 import { StudentsPage } from '@/pages/StudentsPage'
 import { GradesTabPage } from '@/pages/GradesTabPage'
 import { StudentGradesPage } from '@/pages/StudentGradesPage'
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup/:role" element={<SignupPage />} />
           <Route path="/signup" element={<Navigate to="/signup/teacher" replace />} />
+          <Route path="/oauth/result" element={<OAuthResultPage />} />
 
           {/* 교사 — 학생 목록 (사이드바 포함) */}
           <Route element={<AppLayout />}>

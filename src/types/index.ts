@@ -73,6 +73,16 @@ export interface LoginResponse {
   children?: ChildSummary[]
 }
 
+export interface OAuthTokenRequest {
+  authCode: string
+}
+
+export interface OAuthTokenResponse {
+  accessToken: string
+  refreshToken: string
+  user: User
+}
+
 export interface TeacherRegisterRequest {
   email: string
   password: string

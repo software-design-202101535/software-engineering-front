@@ -1,6 +1,10 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import type { User, LoginRequest } from '@/types'
-import { login as loginApi, logout as logoutApi } from '@/api/auth'
+import {
+  login as loginApi,
+  logout as logoutApi,
+  loginWithOAuthCode as loginWithOAuthCodeApi,
+} from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
 interface AuthState {
@@ -10,6 +14,7 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (data: LoginRequest) => Promise<void>
+  loginWithOAuth: (authCode: string) => Promise<User>
   logout: () => Promise<void>
 }
 
@@ -39,6 +44,14 @@ const AuthContext = createContext<AuthContextValue | null>(null)
     setState({ user, isAuthenticated: true })
   }, [])
 
+  const loginWithOAuth = useCallback(async (authCode: string) => {
+    const res = await loginWithOAuthCodeApi(authCode)
+    setAccessToken(res.accessToken)
+    localStorage.setItem('user', JSON.stringify(res.user))
+    setState({ user: res.user, isAuthenticated: true })
+    return res.user
+  }, [])
+
   const logout = useCallback(async () => {
     await logoutApi()
     setAccessToken(null)
@@ -47,7 +60,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, loginWithOAuth, logout }}>
       {children}
     </AuthContext.Provider>
   )

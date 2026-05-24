@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { useLoginForm } from '@/features/auth'
 import { AuthLayout } from '@/layouts/AuthLayout'
 
+const KAKAO_AUTHORIZE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth/oauth/kakao/authorize`
+
 export function LoginPage() {
   const {
     email,
@@ -103,6 +105,25 @@ export function LoginPage() {
                 )}
               </button>
             </form>
+
+            <div className="my-6 flex items-center gap-3">
+              <div className="flex-1 h-px bg-surface-container" />
+              <span className="text-xs text-on-surface-variant">또는</span>
+              <div className="flex-1 h-px bg-surface-container" />
+            </div>
+
+            <a
+              href={KAKAO_AUTHORIZE_URL}
+              className="w-full bg-[#FEE500] hover:bg-[#FDD800] text-black font-headline font-bold py-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path
+                  d="M9 1.5C4.85786 1.5 1.5 4.13401 1.5 7.38388C1.5 9.4799 2.89898 11.3047 4.99744 12.3398L4.10977 15.4673C4.05468 15.6622 4.27849 15.8186 4.44964 15.7062L8.19836 13.2375C8.46155 13.2598 8.72831 13.2727 9 13.2727C13.1421 13.2727 16.5 10.6387 16.5 7.38388C16.5 4.13401 13.1421 1.5 9 1.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span>카카오로 로그인</span>
+            </a>
 
             <div className="mt-10 pt-6 border-t border-surface-container text-center">
               <p className="text-on-surface-variant text-xs">
