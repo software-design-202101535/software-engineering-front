@@ -3,15 +3,12 @@ import type {
   User,
   LoginRequest,
   LoginResponse,
-  OAuthCompleteRequest,
   KakaoLoginResponse,
   KakaoRegisterRequest,
 } from '@/types'
 import {
   login as loginApi,
   logout as logoutApi,
-  loginWithOAuthCode as loginWithOAuthCodeApi,
-  completeOAuthSignup as completeOAuthSignupApi,
   oauthKakaoLogin as oauthKakaoLoginApi,
   oauthKakaoRegister as oauthKakaoRegisterApi,
 } from '@/api/auth'
@@ -24,8 +21,6 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (data: LoginRequest) => Promise<void>
-  loginWithOAuth: (authCode: string) => Promise<User>
-  completeOAuth: (payload: OAuthCompleteRequest) => Promise<User>
   oauthLogin: (code: string) => Promise<KakaoLoginResponse>
   oauthRegister: (payload: KakaoRegisterRequest) => Promise<User>
   logout: () => Promise<void>
@@ -66,24 +61,6 @@ const AuthContext = createContext<AuthContextValue | null>(null)
     applyLoginResponse(res)
   }, [applyLoginResponse])
 
-  const applyOAuthSession = useCallback((accessToken: string, user: User) => {
-    setAccessToken(accessToken)
-    localStorage.setItem('user', JSON.stringify(user))
-    setState({ user, isAuthenticated: true })
-  }, [])
-
-  const loginWithOAuth = useCallback(async (authCode: string) => {
-    const res = await loginWithOAuthCodeApi(authCode)
-    applyOAuthSession(res.accessToken, res.user)
-    return res.user
-  }, [applyOAuthSession])
-
-  const completeOAuth = useCallback(async (payload: OAuthCompleteRequest) => {
-    const res = await completeOAuthSignupApi(payload)
-    applyOAuthSession(res.accessToken, res.user)
-    return res.user
-  }, [applyOAuthSession])
-
   const oauthLogin = useCallback(async (code: string) => {
     const res = await oauthKakaoLoginApi(code)
     if (!res.isNewUser) {
@@ -105,7 +82,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, loginWithOAuth, completeOAuth, oauthLogin, oauthRegister, logout }}>
+    <AuthContext.Provider value={{ ...state, login, oauthLogin, oauthRegister, logout }}>
       {children}
     </AuthContext.Provider>
   )

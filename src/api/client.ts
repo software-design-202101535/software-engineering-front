@@ -25,8 +25,6 @@ const PUBLIC_PATHS = [
   '/api/auth/login/school',
   '/api/auth/login/email',
   '/api/auth/refresh',
-  '/api/auth/oauth/token',
-  '/api/auth/oauth/complete',
   '/api/auth/oauth/kakao',
   '/api/auth/oauth/kakao/register',
 ]

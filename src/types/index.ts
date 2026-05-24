@@ -73,47 +73,6 @@ export interface LoginResponse {
   children?: ChildSummary[]
 }
 
-export interface OAuthTokenRequest {
-  authCode: string
-}
-
-export interface OAuthTokenResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-}
-
-export interface OAuthTeacherInfo {
-  school: SchoolType
-  grade?: number
-  classNum?: number
-}
-
-export interface OAuthStudentInfo {
-  school: SchoolType
-  grade?: number
-  classNum?: number
-  number?: number
-  birthDate?: string
-  phone?: string
-  parentPhone?: string
-  address?: string
-}
-
-export interface OAuthParentInfo {
-  childInfo: string
-}
-
-export interface OAuthCompleteRequest {
-  authCode: string
-  role: 'TEACHER' | 'STUDENT' | 'PARENT'
-  termsAgreed: boolean
-  privacyAgreed: boolean
-  teacherInfo?: OAuthTeacherInfo
-  studentInfo?: OAuthStudentInfo
-  parentInfo?: OAuthParentInfo
-}
-
 // Kakao OAuth (client-side authorization code flow)
 export interface KakaoLoginRequest {
   code: string

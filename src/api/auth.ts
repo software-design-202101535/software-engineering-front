@@ -2,8 +2,6 @@ import { client } from './client'
 import type {
   LoginRequest,
   LoginResponse,
-  OAuthTokenResponse,
-  OAuthCompleteRequest,
   KakaoLoginResponse,
   KakaoRegisterRequest,
   TeacherRegisterRequest,
@@ -13,16 +11,6 @@ import type {
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   const res = await client.post<LoginResponse>('/api/auth/login/email', data)
-  return res.data
-}
-
-export async function loginWithOAuthCode(authCode: string): Promise<OAuthTokenResponse> {
-  const res = await client.post<OAuthTokenResponse>('/api/auth/oauth/token', { authCode })
-  return res.data
-}
-
-export async function completeOAuthSignup(payload: OAuthCompleteRequest): Promise<OAuthTokenResponse> {
-  const res = await client.post<OAuthTokenResponse>('/api/auth/oauth/complete', payload)
   return res.data
 }
 
