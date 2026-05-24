@@ -2,7 +2,11 @@ import { Link } from 'react-router-dom'
 import { useLoginForm } from '@/features/auth'
 import { AuthLayout } from '@/layouts/AuthLayout'
 
-const KAKAO_AUTHORIZE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth/oauth/kakao/authorize`
+const KAKAO_AUTHORIZE_URL =
+  `https://kauth.kakao.com/oauth/authorize` +
+  `?client_id=${import.meta.env.VITE_KAKAO_CLIENT_ID}` +
+  `&redirect_uri=${encodeURIComponent(import.meta.env.VITE_KAKAO_REDIRECT_URI ?? '')}` +
+  `&response_type=code`
 
 export function LoginPage() {
   const {

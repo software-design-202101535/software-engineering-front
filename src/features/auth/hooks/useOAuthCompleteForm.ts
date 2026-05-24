@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
-import type { SchoolType, UserRole, OAuthCompleteRequest } from '@/types'
+import type { SchoolType, UserRole, KakaoRegisterRequest } from '@/types'
 
 export type SelectableRole = 'TEACHER' | 'STUDENT' | 'PARENT'
 
@@ -13,37 +13,36 @@ const ROLE_ROUTES: Record<UserRole, string> = {
 }
 
 export interface OAuthFormFields {
+  email: string
   school: SchoolType | ''
   grade: string
   classNum: string
   number: string
-  birthDate: string
-  phone: string
-  parentPhone: string
-  address: string
-  childInfo: string
+  childEmail: string
 }
 
-const INITIAL_FIELDS: OAuthFormFields = {
+const INITIAL_FIELDS_BASE: Omit<OAuthFormFields, 'email'> = {
   school: '',
   grade: '',
   classNum: '',
   number: '',
-  birthDate: '',
-  phone: '',
-  parentPhone: '',
-  address: '',
-  childInfo: '',
+  childEmail: '',
 }
 
 function buildPayload(
-  authCode: string,
+  tempToken: string,
   role: SelectableRole,
   fields: OAuthFormFields,
   termsAgreed: boolean,
   privacyAgreed: boolean,
-): OAuthCompleteRequest {
-  const base = { authCode, role, termsAgreed, privacyAgreed }
+): KakaoRegisterRequest {
+  const base: KakaoRegisterRequest = {
+    tempToken,
+    role,
+    termsAgreed,
+    privacyAgreed,
+    ...(fields.email ? { email: fields.email } : {}),
+  }
   if (role === 'TEACHER') {
     return {
       ...base,
@@ -62,31 +61,32 @@ function buildPayload(
         ...(fields.grade ? { grade: Number(fields.grade) } : {}),
         ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
         ...(fields.number ? { number: Number(fields.number) } : {}),
-        ...(fields.birthDate ? { birthDate: fields.birthDate } : {}),
-        ...(fields.phone ? { phone: fields.phone } : {}),
-        ...(fields.parentPhone ? { parentPhone: fields.parentPhone } : {}),
-        ...(fields.address ? { address: fields.address } : {}),
       },
     }
   }
   return {
     ...base,
-    parentInfo: { childInfo: fields.childInfo },
+    parentInfo: { childEmail: fields.childEmail },
   }
 }
 
 function resolveErrorMessage(data?: { code?: string; message?: string }): string {
-  if (data?.code === 'EMAIL_ALREADY_EXISTS') return '이미 가입된 이메일입니다. 일반 로그인으로 시도해 주세요.'
-  if (data?.code === 'OAUTH_INVALID_AUTHCODE') return '인증 코드가 만료되었습니다. 다시 로그인해 주세요.'
+  if (data?.code === 'DUPLICATED_USER') return '이미 가입된 계정입니다. 일반 로그인으로 시도해 주세요.'
+  if (data?.code === 'INVALID_TEMP_TOKEN') return '인증 정보가 만료되었습니다. 다시 로그인해 주세요.'
+  if (data?.code === 'OAUTH_EMAIL_REQUIRED') return '이메일을 입력해 주세요.'
+  if (data?.code === 'OAUTH_ROLE_INFO_REQUIRED') return '역할에 해당하는 정보를 모두 입력해 주세요.'
   return data?.message ?? '회원가입에 실패했습니다.'
 }
 
-export function useOAuthCompleteForm(authCode: string) {
+export function useOAuthCompleteForm(tempToken: string, initialEmail = '') {
   const navigate = useNavigate()
-  const { completeOAuth } = useAuth()
+  const { oauthRegister } = useAuth()
 
   const [role, setRole] = useState<SelectableRole | null>(null)
-  const [fields, setFields] = useState<OAuthFormFields>(INITIAL_FIELDS)
+  const [fields, setFields] = useState<OAuthFormFields>({
+    ...INITIAL_FIELDS_BASE,
+    email: initialEmail,
+  })
   const [termsChecked, setTermsChecked] = useState(false)
   const [privacyChecked, setPrivacyChecked] = useState(false)
   const [error, setError] = useState('')
@@ -109,8 +109,8 @@ export function useOAuthCompleteForm(authCode: string) {
     }
     setIsLoading(true)
     try {
-      const payload = buildPayload(authCode, role, fields, termsChecked, privacyChecked)
-      const user = await completeOAuth(payload)
+      const payload = buildPayload(tempToken, role, fields, termsChecked, privacyChecked)
+      const user = await oauthRegister(payload)
       navigate(ROLE_ROUTES[user.role], { replace: true })
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string>; code?: string } } }

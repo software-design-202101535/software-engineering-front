@@ -24,16 +24,16 @@ const LABEL_CLASS =
 
 export function OAuthCompletePage() {
   const [searchParams] = useSearchParams()
-  const authCode = searchParams.get('authCode')
+  const tempToken = searchParams.get('tempToken')
   const email = searchParams.get('email') ?? ''
   const name = searchParams.get('name') ?? ''
 
-  if (!authCode) return <MissingAuthCode />
+  if (!tempToken) return <MissingTempToken />
 
-  return <OAuthCompleteForm authCode={authCode} email={email} name={name} />
+  return <OAuthCompleteForm tempToken={tempToken} email={email} name={name} />
 }
 
-function MissingAuthCode() {
+function MissingTempToken() {
   return (
     <AuthLayout>
       <main className="flex-grow flex items-center justify-center p-6">
@@ -44,7 +44,7 @@ function MissingAuthCode() {
           <span className="material-symbols-outlined text-error text-5xl">error</span>
           <h1 className="font-headline text-xl font-bold text-on-surface">인증 정보 없음</h1>
           <p className="text-sm text-on-surface-variant">
-            인증 코드가 유실되었습니다. 로그인부터 다시 시도해 주세요.
+            인증 정보가 유실되었습니다. 로그인부터 다시 시도해 주세요.
           </p>
           <Link to="/login" className="inline-block w-full bg-primary text-white font-bold py-3 rounded-lg">
             로그인 화면으로
@@ -56,12 +56,12 @@ function MissingAuthCode() {
 }
 
 interface FormProps {
-  authCode: string
+  tempToken: string
   email: string
   name: string
 }
 
-function OAuthCompleteForm({ authCode, email, name }: FormProps) {
+function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
   const {
     role,
     fields,
@@ -75,7 +75,9 @@ function OAuthCompleteForm({ authCode, email, name }: FormProps) {
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,
-  } = useOAuthCompleteForm(authCode)
+  } = useOAuthCompleteForm(tempToken, email)
+
+  const emailPrefilled = !!email
 
   return (
     <AuthLayout>
@@ -85,7 +87,14 @@ function OAuthCompleteForm({ authCode, email, name }: FormProps) {
           style={{ boxShadow: '0 32px 64px -12px rgba(40,52,57,0.06)' }}
         >
           <div className="p-8 md:p-10 space-y-8">
-            <Heading email={email} name={name} />
+            <Heading name={name} />
+
+            <EmailField
+              value={fields.email}
+              prefilled={emailPrefilled}
+              error={fieldErrors.email}
+              onChange={setField('email')}
+            />
 
             <RoleSelector role={role} onSelect={setRole} error={fieldErrors.role} />
 
@@ -116,7 +125,7 @@ function OAuthCompleteForm({ authCode, email, name }: FormProps) {
   )
 }
 
-function Heading({ email, name }: { email: string; name: string }) {
+function Heading({ name }: { name: string }) {
   return (
     <div className="text-center space-y-2">
       <h2 className="text-2xl font-extrabold text-on-surface tracking-tight">추가 정보 입력</h2>
@@ -124,7 +133,38 @@ function Heading({ email, name }: { email: string; name: string }) {
         {name && <span className="font-semibold text-on-surface">{name}</span>}
         {name && '님, '}카카오 인증이 완료되었습니다. 역할과 학교 정보를 입력해 주세요.
       </p>
-      {email && <p className="text-xs text-on-surface-variant">연결된 이메일: {email}</p>}
+    </div>
+  )
+}
+
+function EmailField({
+  value,
+  prefilled,
+  error,
+  onChange,
+}: {
+  value: string
+  prefilled: boolean
+  error?: string
+  onChange: React.ChangeEventHandler<HTMLInputElement>
+}) {
+  return (
+    <div className="space-y-1">
+      <label className={LABEL_CLASS}>이메일</label>
+      <input
+        className={INPUT_CLASS}
+        type="email"
+        placeholder={prefilled ? '' : '이메일을 입력해 주세요'}
+        value={value}
+        onChange={onChange}
+        autoComplete="email"
+      />
+      {prefilled && (
+        <p className="text-xs text-on-surface-variant ml-1 mt-1">
+          카카오에서 가져온 이메일입니다. 필요 시 수정할 수 있습니다.
+        </p>
+      )}
+      <FieldError message={error} />
     </div>
   )
 }
@@ -330,30 +370,6 @@ function StudentFormFields({ fields, setField, fieldErrors }: FieldsProps) {
           <FieldError message={fieldErrors.number} />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>생년월일 <span className="normal-case font-normal">(선택)</span></label>
-          <input className={INPUT_CLASS} type="date" value={fields.birthDate} onChange={setField('birthDate')} />
-          <FieldError message={fieldErrors.birthDate} />
-        </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>연락처 <span className="normal-case font-normal">(선택)</span></label>
-          <input className={INPUT_CLASS} type="tel" placeholder="010-1234-5678" value={fields.phone} onChange={setField('phone')} />
-          <FieldError message={fieldErrors.phone} />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>학부모 연락처 <span className="normal-case font-normal">(선택)</span></label>
-          <input className={INPUT_CLASS} type="tel" placeholder="010-1234-5678" value={fields.parentPhone} onChange={setField('parentPhone')} />
-          <FieldError message={fieldErrors.parentPhone} />
-        </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>주소 <span className="normal-case font-normal">(선택)</span></label>
-          <input className={INPUT_CLASS} type="text" placeholder="서울특별시 ..." value={fields.address} onChange={setField('address')} />
-          <FieldError message={fieldErrors.address} />
-        </div>
-      </div>
     </>
   )
 }
@@ -367,8 +383,8 @@ function ParentFormFields({ fields, setField, fieldErrors }: FieldsProps) {
       </div>
       <div className="space-y-1">
         <label className={LABEL_CLASS}>자녀 이메일</label>
-        <input className={INPUT_CLASS} type="text" placeholder="자녀 계정 이메일" value={fields.childInfo} onChange={setField('childInfo')} />
-        <FieldError message={fieldErrors.childInfo} />
+        <input className={INPUT_CLASS} type="email" placeholder="자녀 계정 이메일" value={fields.childEmail} onChange={setField('childEmail')} />
+        <FieldError message={fieldErrors.childEmail} />
       </div>
     </div>
   )
