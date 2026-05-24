@@ -3,6 +3,7 @@ import type {
   LoginRequest,
   LoginResponse,
   OAuthTokenResponse,
+  OAuthCompleteRequest,
   TeacherRegisterRequest,
   StudentRegisterRequest,
   ParentRegisterRequest,
@@ -15,6 +16,11 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 
 export async function loginWithOAuthCode(authCode: string): Promise<OAuthTokenResponse> {
   const res = await client.post<OAuthTokenResponse>('/api/auth/oauth/token', { authCode })
+  return res.data
+}
+
+export async function completeOAuthSignup(payload: OAuthCompleteRequest): Promise<OAuthTokenResponse> {
+  const res = await client.post<OAuthTokenResponse>('/api/auth/oauth/complete', payload)
   return res.data
 }
 

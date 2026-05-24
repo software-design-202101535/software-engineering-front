@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import type { User, LoginRequest } from '@/types'
+import type { User, LoginRequest, OAuthCompleteRequest } from '@/types'
 import {
   login as loginApi,
   logout as logoutApi,
   loginWithOAuthCode as loginWithOAuthCodeApi,
+  completeOAuthSignup as completeOAuthSignupApi,
 } from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
@@ -15,6 +16,7 @@ interface AuthState {
 interface AuthContextValue extends AuthState {
   login: (data: LoginRequest) => Promise<void>
   loginWithOAuth: (authCode: string) => Promise<User>
+  completeOAuth: (payload: OAuthCompleteRequest) => Promise<User>
   logout: () => Promise<void>
 }
 
@@ -44,13 +46,23 @@ const AuthContext = createContext<AuthContextValue | null>(null)
     setState({ user, isAuthenticated: true })
   }, [])
 
+  const applyOAuthSession = useCallback((accessToken: string, user: User) => {
+    setAccessToken(accessToken)
+    localStorage.setItem('user', JSON.stringify(user))
+    setState({ user, isAuthenticated: true })
+  }, [])
+
   const loginWithOAuth = useCallback(async (authCode: string) => {
     const res = await loginWithOAuthCodeApi(authCode)
-    setAccessToken(res.accessToken)
-    localStorage.setItem('user', JSON.stringify(res.user))
-    setState({ user: res.user, isAuthenticated: true })
+    applyOAuthSession(res.accessToken, res.user)
     return res.user
-  }, [])
+  }, [applyOAuthSession])
+
+  const completeOAuth = useCallback(async (payload: OAuthCompleteRequest) => {
+    const res = await completeOAuthSignupApi(payload)
+    applyOAuthSession(res.accessToken, res.user)
+    return res.user
+  }, [applyOAuthSession])
 
   const logout = useCallback(async () => {
     await logoutApi()
@@ -60,7 +72,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, loginWithOAuth, logout }}>
+    <AuthContext.Provider value={{ ...state, login, loginWithOAuth, completeOAuth, logout }}>
       {children}
     </AuthContext.Provider>
   )

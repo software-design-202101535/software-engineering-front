@@ -83,6 +83,37 @@ export interface OAuthTokenResponse {
   user: User
 }
 
+export interface OAuthTeacherInfo {
+  school: SchoolType
+  grade?: number
+  classNum?: number
+}
+
+export interface OAuthStudentInfo {
+  school: SchoolType
+  grade?: number
+  classNum?: number
+  number?: number
+  birthDate?: string
+  phone?: string
+  parentPhone?: string
+  address?: string
+}
+
+export interface OAuthParentInfo {
+  childInfo: string
+}
+
+export interface OAuthCompleteRequest {
+  authCode: string
+  role: 'TEACHER' | 'STUDENT' | 'PARENT'
+  termsAgreed: boolean
+  privacyAgreed: boolean
+  teacherInfo?: OAuthTeacherInfo
+  studentInfo?: OAuthStudentInfo
+  parentInfo?: OAuthParentInfo
+}
+
 export interface TeacherRegisterRequest {
   email: string
   password: string

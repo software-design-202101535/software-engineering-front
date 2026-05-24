@@ -31,9 +31,7 @@ export function OAuthResultPage() {
     }
 
     if (needsInfo) {
-      // TODO: Commit 2 — 신규 유저 역할 선택/정보 입력 페이지로 이동
-      // navigate(`/oauth/complete?${searchParams.toString()}`)
-      setError('신규 회원가입 흐름은 아직 준비 중입니다.')
+      navigate(`/oauth/complete?${searchParams.toString()}`, { replace: true })
       return
     }
 
@@ -43,7 +41,7 @@ export function OAuthResultPage() {
         const axiosErr = err as { response?: { data?: { message?: string } } }
         setError(axiosErr.response?.data?.message ?? '카카오 로그인에 실패했습니다.')
       })
-  }, [authCode, needsInfo, loginWithOAuth, navigate])
+  }, [authCode, needsInfo, loginWithOAuth, navigate, searchParams])
 
   return (
     <AuthLayout>
