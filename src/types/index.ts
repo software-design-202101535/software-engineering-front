@@ -73,6 +73,52 @@ export interface LoginResponse {
   children?: ChildSummary[]
 }
 
+// Kakao OAuth (client-side authorization code flow)
+export interface KakaoLoginRequest {
+  code: string
+}
+
+interface KakaoLoginResponseExisting extends LoginResponse {
+  isNewUser: false
+}
+
+interface KakaoLoginResponseNew {
+  isNewUser: true
+  tempToken: string
+  email: string | null
+  name: string | null
+}
+
+export type KakaoLoginResponse = KakaoLoginResponseExisting | KakaoLoginResponseNew
+
+export interface KakaoTeacherInfo {
+  school: SchoolType
+  grade?: number
+  classNum?: number
+}
+
+export interface KakaoStudentInfo {
+  school: SchoolType
+  grade?: number
+  classNum?: number
+  number?: number
+}
+
+export interface KakaoParentInfo {
+  childEmail: string
+}
+
+export interface KakaoRegisterRequest {
+  tempToken: string
+  role: 'TEACHER' | 'STUDENT' | 'PARENT'
+  email?: string
+  termsAgreed: boolean
+  privacyAgreed: boolean
+  teacherInfo?: KakaoTeacherInfo
+  studentInfo?: KakaoStudentInfo
+  parentInfo?: KakaoParentInfo
+}
+
 export interface TeacherRegisterRequest {
   email: string
   password: string

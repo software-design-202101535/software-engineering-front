@@ -1,6 +1,17 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import type { User, LoginRequest } from '@/types'
-import { login as loginApi, logout as logoutApi } from '@/api/auth'
+import type {
+  User,
+  LoginRequest,
+  LoginResponse,
+  KakaoLoginResponse,
+  KakaoRegisterRequest,
+} from '@/types'
+import {
+  login as loginApi,
+  logout as logoutApi,
+  oauthKakaoLogin as oauthKakaoLoginApi,
+  oauthKakaoRegister as oauthKakaoRegisterApi,
+} from '@/api/auth'
 import { setAccessToken } from '@/api/client'
 
 interface AuthState {
@@ -10,7 +21,20 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (data: LoginRequest) => Promise<void>
+  oauthLogin: (code: string) => Promise<KakaoLoginResponse>
+  oauthRegister: (payload: KakaoRegisterRequest) => Promise<User>
   logout: () => Promise<void>
+}
+
+function userFromLoginResponse(res: LoginResponse): User {
+  return {
+    id: res.userId,
+    email: res.email,
+    name: res.name,
+    role: res.role,
+    ...(res.studentId != null ? { studentId: res.studentId } : {}),
+    ...(res.children != null ? { children: res.children } : {}),
+  }
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -24,20 +48,31 @@ const AuthContext = createContext<AuthContextValue | null>(null)
       }
     })
 
-  const login = useCallback(async (data: LoginRequest) => {
-    const res = await loginApi(data)
-    const user: User = {
-      id: res.userId,
-      email: res.email,
-      name: res.name,
-      role: res.role,
-      ...(res.studentId != null ? { studentId: res.studentId } : {}),
-      ...(res.children != null ? { children: res.children } : {}),
-    }
+  const applyLoginResponse = useCallback((res: LoginResponse) => {
+    const user = userFromLoginResponse(res)
     setAccessToken(res.accessToken)
     localStorage.setItem('user', JSON.stringify(user))
     setState({ user, isAuthenticated: true })
+    return user
   }, [])
+
+  const login = useCallback(async (data: LoginRequest) => {
+    const res = await loginApi(data)
+    applyLoginResponse(res)
+  }, [applyLoginResponse])
+
+  const oauthLogin = useCallback(async (code: string) => {
+    const res = await oauthKakaoLoginApi(code)
+    if (!res.isNewUser) {
+      applyLoginResponse(res)
+    }
+    return res
+  }, [applyLoginResponse])
+
+  const oauthRegister = useCallback(async (payload: KakaoRegisterRequest) => {
+    const res = await oauthKakaoRegisterApi(payload)
+    return applyLoginResponse(res)
+  }, [applyLoginResponse])
 
   const logout = useCallback(async () => {
     await logoutApi()
@@ -47,7 +82,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, oauthLogin, oauthRegister, logout }}>
       {children}
     </AuthContext.Provider>
   )
