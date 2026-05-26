@@ -286,12 +286,11 @@ export interface Notification {
   type: NotificationType
   title: string
   message: string
-  isRead: boolean
-  referenceId: number | null
-  referenceType: NotificationReferenceType | null
-  // 학부모 자녀 라우팅 보조 필드 (백엔드 추가 노출 후 채워질 예정)
-  referenceStudentId?: number
-  referenceStudentName?: string
+  read: boolean
+  referenceId: number
+  referenceType: NotificationReferenceType
+  referenceStudentId: number
+  referenceStudentName: string
   createdAt: string
 }
 
