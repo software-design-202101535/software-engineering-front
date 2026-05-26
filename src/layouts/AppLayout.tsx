@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth'
+import { useFcmForeground, useUnreadCount } from '@/features/notifications'
 import type { UserRole, ChildSummary } from '@/types'
 
 interface NavItem {
@@ -9,10 +10,10 @@ interface NavItem {
   icon: string
 }
 
+// 교사는 현 명세상 알림 수신자가 아니므로 알림 메뉴를 두지 않는다
 const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
   TEACHER: [
     { to: '/students', label: '학생 관리', icon: 'group' },
-    { to: '/notifications', label: '알림', icon: 'notifications' },
   ],
   STUDENT: [
     { to: '/student/grades', label: '성적', icon: 'grade' },
@@ -26,6 +27,11 @@ const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
     { to: '/parent/feedback', label: '피드백', icon: 'feedback' },
     { to: '/parent/notifications', label: '알림', icon: 'notifications' },
   ],
+}
+
+const NOTIFICATIONS_PATH: Partial<Record<UserRole, string>> = {
+  STUDENT: '/student/notifications',
+  PARENT: '/parent/notifications',
 }
 
 function ChildDropdown({
@@ -53,20 +59,57 @@ function ChildDropdown({
   )
 }
 
+function NotificationBellButton({ path, unreadCount }: { path: string; unreadCount: number }) {
+  const navigate = useNavigate()
+  return (
+    <button
+      type="button"
+      onClick={() => navigate(path)}
+      className="relative text-on-surface-variant hover:text-primary transition-colors"
+      aria-label="알림"
+    >
+      <span className="material-symbols-outlined">notifications</span>
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      )}
+    </button>
+  )
+}
+
 export function AppLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+  useFcmForeground()
+  const unreadCount = useUnreadCount()
+
   const children = user?.role === 'PARENT' ? (user?.children ?? []) : []
-  const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.studentId ?? 0)
+  const firstChildId = children[0]?.studentId ?? 0
+  const childIdFromQuery = Number(searchParams.get('childId'))
+  const selectedChildId =
+    childIdFromQuery && children.some((c) => c.studentId === childIdFromQuery)
+      ? childIdFromQuery
+      : firstChildId
+
+  const navItems = (user?.role ? NAV_ITEMS[user.role] : undefined) ?? []
+  const notificationsPath = user?.role ? NOTIFICATIONS_PATH[user.role] : undefined
+
+  const handleSelectChild = (id: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('childId', String(id))
+      return next
+    })
+  }
 
   const handleLogout = async () => {
     await logout()
     navigate('/login')
   }
-
-  const navItems = (user?.role ? NAV_ITEMS[user.role] : undefined) ?? []
 
   const handleNavClick = () => {
     if (window.innerWidth < 768) setIsSidebarOpen(false)
@@ -110,7 +153,7 @@ export function AppLayout() {
           <ChildDropdown
             children={children}
             selectedChildId={selectedChildId}
-            onSelect={setSelectedChildId}
+            onSelect={handleSelectChild}
           />
         )}
 
@@ -181,12 +224,9 @@ export function AppLayout() {
           </button>
           <div className="hidden md:block" />
           <div className="flex items-center gap-4">
-            <button className="relative text-on-surface-variant hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                2
-              </span>
-            </button>
+            {notificationsPath && (
+              <NotificationBellButton path={notificationsPath} unreadCount={unreadCount} />
+            )}
             <button className="text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined">settings</span>
             </button>
