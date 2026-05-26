@@ -25,4 +25,9 @@ export const handlers = [
   http.post(`${BASE}/api/students/:id/notes`, () => HttpResponse.json({})),
   http.patch(`${BASE}/api/students/:id/notes/:noteId`, () => HttpResponse.json({})),
   http.delete(`${BASE}/api/students/:id/notes/:noteId`, () => new HttpResponse(null, { status: 204 })),
+  http.get(`${BASE}/api/notifications`, () => HttpResponse.json([])),
+  http.patch(`${BASE}/api/notifications/:id/read`, () => new HttpResponse(null, { status: 204 })),
+  http.patch(`${BASE}/api/notifications/read-all`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${BASE}/api/devices/tokens`, () => new HttpResponse(null, { status: 204 })),
+  http.delete(`${BASE}/api/devices/tokens/:token`, () => new HttpResponse(null, { status: 204 })),
 ]
