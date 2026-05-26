@@ -4,7 +4,9 @@ import {
   useNotifications,
   useMarkRead,
   useMarkAllRead,
+  useNotificationPermission,
   NotificationList,
+  PermissionBlockedBanner,
   resolveNotificationLink,
 } from '@/features/notifications'
 import type { Notification } from '@/types'
@@ -16,6 +18,7 @@ export function NotificationsPage() {
   const markAllRead = useMarkAllRead()
   const navigate = useNavigate()
 
+  const permission = useNotificationPermission()
   const role = user?.role
   const showStudentPrefix = role === 'PARENT'
   const unreadCount = data?.filter((n) => !n.read).length ?? 0
@@ -34,6 +37,7 @@ export function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {permission === 'denied' && <PermissionBlockedBanner />}
       <header className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-on-surface">알림</h1>
         <button
