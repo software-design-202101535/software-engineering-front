@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import type {
   User,
   LoginRequest,
@@ -13,6 +21,7 @@ import {
   oauthKakaoRegister as oauthKakaoRegisterApi,
 } from '@/api/auth'
 import { setAccessToken } from '@/api/client'
+import { syncFcmTokenOnLogin, syncFcmTokenOnLogout } from '@/lib/fcmSync'
 
 interface AuthState {
   user: User | null
@@ -39,14 +48,15 @@ function userFromLoginResponse(res: LoginResponse): User {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-  export function AuthProvider({ children }: { children: ReactNode }) {
-    const [state, setState] = useState<AuthState>(() => {
-      const saved = localStorage.getItem('user')
-      return {
-        user: saved ? (JSON.parse(saved) as User) : null,
-        isAuthenticated: !!saved,
-      }
-    })
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AuthState>(() => {
+    const saved = localStorage.getItem('user')
+    return {
+      user: saved ? (JSON.parse(saved) as User) : null,
+      isAuthenticated: !!saved,
+    }
+  })
+  const fcmTokenRef = useRef<string | null>(null)
 
   const applyLoginResponse = useCallback((res: LoginResponse) => {
     const user = userFromLoginResponse(res)
@@ -55,6 +65,18 @@ const AuthContext = createContext<AuthContextValue | null>(null)
     setState({ user, isAuthenticated: true })
     return user
   }, [])
+
+  // 인증 상태가 true가 되면(로그인/새로고침) FCM 토큰 등록 시도. 실패는 swallow.
+  useEffect(() => {
+    if (!state.isAuthenticated) return
+    let cancelled = false
+    void syncFcmTokenOnLogin().then((token) => {
+      if (!cancelled) fcmTokenRef.current = token
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [state.isAuthenticated])
 
   const login = useCallback(async (data: LoginRequest) => {
     const res = await loginApi(data)
@@ -75,6 +97,8 @@ const AuthContext = createContext<AuthContextValue | null>(null)
   }, [applyLoginResponse])
 
   const logout = useCallback(async () => {
+    await syncFcmTokenOnLogout(fcmTokenRef.current)
+    fcmTokenRef.current = null
     await logoutApi()
     setAccessToken(null)
     localStorage.removeItem('user')

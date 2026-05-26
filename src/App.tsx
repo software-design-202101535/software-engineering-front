@@ -18,6 +18,7 @@ import { FeedbackTabPage } from '@/pages/FeedbackTabPage'
 import { StudentFeedbackPage } from '@/pages/StudentFeedbackPage'
 import { ParentFeedbackPage } from '@/pages/ParentFeedbackPage'
 import { CounselingTabPage } from '@/pages/CounselingTabPage'
+import { NotificationsPage } from '@/pages/NotificationsPage'
 
 export default function App() {
   return (
@@ -38,7 +39,6 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/dashboard" element={<Navigate to="/students" replace />} />
-            <Route path="/notifications" element={<PlaceholderTabPage tabName="알림" />} />
           </Route>
 
           {/* 교사 — 학생 상세 (전체 화면, 탭 바 고정) */}
@@ -57,7 +57,7 @@ export default function App() {
             <Route path="/student/grades" element={<StudentGradesPage />} />
             <Route path="/student/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/student/feedback" element={<StudentFeedbackPage />} />
-            <Route path="/student/notifications" element={<PlaceholderTabPage tabName="알림" />} />
+            <Route path="/student/notifications" element={<NotificationsPage />} />
           </Route>
 
           {/* 학부모 */}
@@ -65,7 +65,7 @@ export default function App() {
             <Route path="/parent/grades" element={<ParentGradesPage />} />
             <Route path="/parent/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/parent/feedback" element={<ParentFeedbackPage />} />
-            <Route path="/parent/notifications" element={<PlaceholderTabPage tabName="알림" />} />
+            <Route path="/parent/notifications" element={<NotificationsPage />} />
           </Route>
         </Routes>
       </AuthProvider>

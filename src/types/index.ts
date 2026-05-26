@@ -278,15 +278,19 @@ export interface NoteRequest {
   date: string
 }
 
-export type NotificationType = 'GRADE' | 'FEEDBACK' | 'COUNSELING' | 'SYSTEM'
+export type NotificationType = 'GRADE_UPDATED' | 'FEEDBACK_SHARED'
+export type NotificationReferenceType = 'GRADE' | 'FEEDBACK'
 
 export interface Notification {
   id: number
-  userId: number
   type: NotificationType
   title: string
   message: string
-  isRead: boolean
+  read: boolean
+  referenceId: number
+  referenceType: NotificationReferenceType
+  referenceStudentId: number
+  referenceStudentName: string
   createdAt: string
 }
 
