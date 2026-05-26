@@ -45,4 +45,12 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+
+  // Service Worker (public/firebase-messaging-sw.js 등)
+  {
+    files: ['public/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.serviceworker, firebase: 'readonly' },
+    },
+  },
 )
