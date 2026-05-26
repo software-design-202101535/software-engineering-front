@@ -27,8 +27,8 @@ dist-ssr
 .env
 .env.local
 .env.production
-.env.example
 
 API_SPEC.md
 CLAUDE.md
 .claude
+docs
