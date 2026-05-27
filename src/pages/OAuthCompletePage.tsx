@@ -75,9 +75,10 @@ function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,
-  } = useOAuthCompleteForm(tempToken, email)
+  } = useOAuthCompleteForm(tempToken, email, name)
 
   const emailPrefilled = !!email
+  const namePrefilled = !!name
 
   return (
     <AuthLayout>
@@ -87,7 +88,14 @@ function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
           style={{ boxShadow: '0 32px 64px -12px rgba(40,52,57,0.06)' }}
         >
           <div className="p-8 md:p-10 space-y-8">
-            <Heading name={name} />
+            <Heading />
+
+            <NameField
+              value={fields.name}
+              prefilled={namePrefilled}
+              error={fieldErrors.name}
+              onChange={setField('name')}
+            />
 
             <EmailField
               value={fields.email}
@@ -125,14 +133,45 @@ function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
   )
 }
 
-function Heading({ name }: { name: string }) {
+function Heading() {
   return (
     <div className="text-center space-y-2">
       <h2 className="text-2xl font-extrabold text-on-surface tracking-tight">추가 정보 입력</h2>
       <p className="text-sm text-on-surface-variant">
-        {name && <span className="font-semibold text-on-surface">{name}</span>}
-        {name && '님, '}카카오 인증이 완료되었습니다. 역할과 학교 정보를 입력해 주세요.
+        카카오 인증이 완료되었습니다. 이름과 역할, 학교 정보를 입력해 주세요.
       </p>
+    </div>
+  )
+}
+
+function NameField({
+  value,
+  prefilled,
+  error,
+  onChange,
+}: {
+  value: string
+  prefilled: boolean
+  error?: string
+  onChange: React.ChangeEventHandler<HTMLInputElement>
+}) {
+  return (
+    <div className="space-y-1">
+      <label className={LABEL_CLASS}>이름</label>
+      <input
+        className={INPUT_CLASS}
+        type="text"
+        placeholder={prefilled ? '' : '이름을 입력해 주세요'}
+        value={value}
+        onChange={onChange}
+        autoComplete="name"
+      />
+      {prefilled && (
+        <p className="text-xs text-on-surface-variant ml-1 mt-1">
+          카카오에서 가져온 이름입니다. 필요 시 수정할 수 있습니다.
+        </p>
+      )}
+      <FieldError message={error} />
     </div>
   )
 }

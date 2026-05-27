@@ -13,6 +13,7 @@ const ROLE_ROUTES: Record<UserRole, string> = {
 }
 
 export interface OAuthFormFields {
+  name: string
   email: string
   school: SchoolType | ''
   grade: string
@@ -21,7 +22,7 @@ export interface OAuthFormFields {
   childEmail: string
 }
 
-const INITIAL_FIELDS_BASE: Omit<OAuthFormFields, 'email'> = {
+const INITIAL_FIELDS_BASE: Omit<OAuthFormFields, 'name' | 'email'> = {
   school: '',
   grade: '',
   classNum: '',
@@ -39,6 +40,7 @@ function buildPayload(
   const base: KakaoRegisterRequest = {
     tempToken,
     role,
+    name: fields.name,
     termsAgreed,
     privacyAgreed,
     ...(fields.email ? { email: fields.email } : {}),
@@ -78,13 +80,14 @@ function resolveErrorMessage(data?: { code?: string; message?: string }): string
   return data?.message ?? '회원가입에 실패했습니다.'
 }
 
-export function useOAuthCompleteForm(tempToken: string, initialEmail = '') {
+export function useOAuthCompleteForm(tempToken: string, initialEmail = '', initialName = '') {
   const navigate = useNavigate()
   const { oauthRegister } = useAuth()
 
   const [role, setRole] = useState<SelectableRole | null>(null)
   const [fields, setFields] = useState<OAuthFormFields>({
     ...INITIAL_FIELDS_BASE,
+    name: initialName,
     email: initialEmail,
   })
   const [termsChecked, setTermsChecked] = useState(false)

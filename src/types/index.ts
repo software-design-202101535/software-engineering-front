@@ -111,6 +111,7 @@ export interface KakaoParentInfo {
 export interface KakaoRegisterRequest {
   tempToken: string
   role: 'TEACHER' | 'STUDENT' | 'PARENT'
+  name: string
   email?: string
   termsAgreed: boolean
   privacyAgreed: boolean
