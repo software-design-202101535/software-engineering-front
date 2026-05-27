@@ -25,6 +25,8 @@ export function OAuthKakaoCallbackPage() {
   const { oauthLogin } = useAuth()
 
   const code = searchParams.get('code')
+  const kakaoError = searchParams.get('error')
+  const kakaoErrorDescription = searchParams.get('error_description')
 
   const { mutate, isIdle, isError, error } = useMutation({
     mutationFn: (kakaoCode: string) => oauthLogin(kakaoCode),
@@ -44,6 +46,9 @@ export function OAuthKakaoCallbackPage() {
     if (code && isIdle) mutate(code)
   }, [code, isIdle, mutate])
 
+  if (kakaoError) {
+    return <Failure message={`카카오 인증 실패: ${kakaoErrorDescription ?? kakaoError}`} />
+  }
   if (!code) return <Failure message="인증 코드가 없습니다. 다시 로그인해 주세요." />
   if (isError) return <Failure message={resolveErrorMessage(error)} />
   return <Loading />
