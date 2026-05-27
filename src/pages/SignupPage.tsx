@@ -1,10 +1,7 @@
-import { useState } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import { registerTeacher, registerStudent, registerParent } from '@/api/auth'
-import { SCHOOLS, type SchoolType } from '@/types'
-
-type SignupRole = 'teacher' | 'student' | 'parent'
+import { useSignupForm, type SignupRole, type SignupFormFields } from '@/features/auth'
+import { SCHOOLS } from '@/types'
 
 const ROLE_LABELS: Record<SignupRole, string> = {
   teacher: '교사',
@@ -20,107 +17,21 @@ const SELECT_CLASS =
 
 const LABEL_CLASS = 'block text-[0.75rem] font-semibold text-on-surface-variant uppercase tracking-wider ml-1'
 
-interface FormFields {
-  name: string
-  email: string
-  password: string
-  passwordConfirm: string
-  school: SchoolType | ''
-  grade: string
-  classNum: string
-  number: string
-  childEmail: string
-}
-
-const INITIAL_FIELDS: FormFields = {
-  name: '',
-  email: '',
-  password: '',
-  passwordConfirm: '',
-  school: '',
-  grade: '',
-  classNum: '',
-  number: '',
-  childEmail: '',
-}
-
 export function SignupPage() {
   const { role = 'teacher' } = useParams<{ role: SignupRole }>()
   const activeRole = (role as SignupRole) || 'teacher'
-  const navigate = useNavigate()
-
-  const [fields, setFields] = useState<FormFields>(INITIAL_FIELDS)
-  const [termsChecked, setTermsChecked] = useState(false)
-  const [privacyChecked, setPrivacyChecked] = useState(false)
-  const [error, setError] = useState('')
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
-
-  const setField = (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFields((prev) => ({ ...prev, [key]: e.target.value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setFieldErrors({})
-
-    if (fields.password !== fields.passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다.')
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      if (activeRole === 'teacher') {
-        await registerTeacher({
-          email: fields.email,
-          password: fields.password,
-          passwordConfirm: fields.passwordConfirm,
-          name: fields.name,
-          school: fields.school as SchoolType,
-          ...(fields.grade ? { grade: Number(fields.grade) } : {}),
-          ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
-          termsAgreed: termsChecked,
-          privacyAgreed: privacyChecked,
-        })
-      } else if (activeRole === 'student') {
-        await registerStudent({
-          email: fields.email,
-          password: fields.password,
-          passwordConfirm: fields.passwordConfirm,
-          name: fields.name,
-          school: fields.school as SchoolType,
-          ...(fields.grade ? { grade: Number(fields.grade) } : {}),
-          ...(fields.classNum ? { classNum: Number(fields.classNum) } : {}),
-          ...(fields.number ? { number: Number(fields.number) } : {}),
-          termsAgreed: termsChecked,
-          privacyAgreed: privacyChecked,
-        })
-      } else {
-        await registerParent({
-          email: fields.email,
-          password: fields.password,
-          passwordConfirm: fields.passwordConfirm,
-          name: fields.name,
-          childEmail: fields.childEmail,
-          termsAgreed: termsChecked,
-          privacyAgreed: privacyChecked,
-        })
-      }
-      navigate('/login')
-    } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string> } } }
-      const data = axiosErr.response?.data
-      if (data?.errors) {
-        setFieldErrors(data.errors)
-      } else {
-        setError(data?.message ?? '회원가입에 실패했습니다.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    fields,
+    termsChecked,
+    privacyChecked,
+    error,
+    fieldErrors,
+    isLoading,
+    setField,
+    setTermsChecked,
+    setPrivacyChecked,
+    handleSubmit,
+  } = useSignupForm(activeRole)
 
   return (
     <AuthLayout>
@@ -234,8 +145,8 @@ export function SignupPage() {
 }
 
 interface FormProps {
-  fields: FormFields
-  setField: (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  fields: SignupFormFields
+  setField: (key: keyof SignupFormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   fieldErrors: Record<string, string>
 }
 

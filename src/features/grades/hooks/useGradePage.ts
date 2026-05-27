@@ -18,7 +18,7 @@ type PendingCreate = {
   score: number | null
 }
 
-function buildUpdateItems(
+export function buildUpdateItems(
   editedScores: Record<number, string>,
   grades: Grade[],
 ) {
