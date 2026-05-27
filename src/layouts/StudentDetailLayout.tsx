@@ -34,12 +34,6 @@ export function StudentDetailLayout() {
       <header className="sticky top-0 z-50 h-16 bg-surface-container-lowest border-b border-surface-container px-6 flex items-center justify-between shrink-0">
         <span className="font-headline font-bold text-primary text-lg tracking-tight">EduManager</span>
         <div className="flex items-center gap-4">
-          <button className="relative text-on-surface-variant hover:text-primary transition-colors">
-            <span className="material-symbols-outlined">notifications</span>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              2
-            </span>
-          </button>
           <button className="text-on-surface-variant hover:text-primary transition-colors">
             <span className="material-symbols-outlined">settings</span>
           </button>
