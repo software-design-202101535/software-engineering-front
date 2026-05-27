@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
 import { AuthLayout } from '@/layouts/AuthLayout'
@@ -20,28 +20,13 @@ function resolveErrorMessage(err: unknown): string {
 }
 
 export function OAuthKakaoCallbackPage() {
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { oauthLogin } = useAuth()
 
-  // URL 쿼리는 첫 마운트 시점에 한 번만 읽어 state로 잡아둔다.
-  // 라우터의 useSearchParams는 리렌더마다 현재 URL을 다시 읽기 때문에,
-  // 어떤 이유로든 URL이 바뀌면 code가 사라져 "인증 코드가 없습니다"가 잘못 뜰 수 있음.
-  const [params] = useState(() => {
-    const sp = new URLSearchParams(window.location.search)
-    // eslint-disable-next-line no-console
-    console.log('[OAuth callback] mount:', {
-      href: window.location.href,
-      search: window.location.search,
-      code: sp.get('code'),
-      error: sp.get('error'),
-    })
-    return {
-      code: sp.get('code'),
-      error: sp.get('error'),
-      errorDescription: sp.get('error_description'),
-    }
-  })
-  const { code, error: kakaoError, errorDescription: kakaoErrorDescription } = params
+  const code = searchParams.get('code')
+  const kakaoError = searchParams.get('error')
+  const kakaoErrorDescription = searchParams.get('error_description')
 
   const { mutate, isIdle, isError, error } = useMutation({
     mutationFn: (kakaoCode: string) => oauthLogin(kakaoCode),
@@ -62,33 +47,14 @@ export function OAuthKakaoCallbackPage() {
   }, [code, isIdle, mutate])
 
   if (kakaoError) {
-    return (
-      <Failure
-        message={`카카오 인증 실패: ${kakaoErrorDescription ?? kakaoError}`}
-        debug={window.location.search}
-      />
-    )
+    return <Failure message={`카카오 인증 실패: ${kakaoErrorDescription ?? kakaoError}`} />
   }
-  if (!code) {
-    return (
-      <Failure
-        message="인증 코드가 전달되지 않았습니다. 카카오 로그인부터 다시 시도해 주세요."
-        debug={window.location.search || '(URL에 쿼리스트링이 비어있음)'}
-      />
-    )
-  }
-  if (isError) {
-    return (
-      <Failure
-        message={resolveErrorMessage(error)}
-        debug={`code 길이: ${code.length}, search: ${window.location.search}`}
-      />
-    )
-  }
+  if (!code) return <Failure message="인증 코드가 없습니다. 다시 로그인해 주세요." />
+  if (isError) return <Failure message={resolveErrorMessage(error)} />
   return <Loading />
 }
 
-function Failure({ message, debug }: { message: string; debug?: string }) {
+function Failure({ message }: { message: string }) {
   return (
     <AuthLayout>
       <main className="flex-grow flex items-center justify-center p-6">
@@ -100,11 +66,6 @@ function Failure({ message, debug }: { message: string; debug?: string }) {
             <span className="material-symbols-outlined text-error text-5xl">error</span>
             <h1 className="font-headline text-xl font-bold text-on-surface">로그인 실패</h1>
             <p className="text-sm text-on-surface-variant">{message}</p>
-            {debug && (
-              <pre className="text-[10px] text-left text-on-surface-variant bg-surface-container p-3 rounded-md break-all whitespace-pre-wrap">
-                {debug}
-              </pre>
-            )}
             <Link
               to="/login"
               className="inline-block w-full bg-primary hover:bg-primary-dim text-white font-headline font-bold py-3 rounded-lg transition-all"

@@ -111,12 +111,14 @@ describe('oauthLogin', () => {
     server.use(
       http.post(url('/api/auth/oauth/kakao'), () =>
         HttpResponse.json({
-          isNewUser: false,
-          accessToken: 'oauth-access',
-          userId: 7,
-          email: 'kakao@test.com',
-          name: '카카오유저',
-          role: 'TEACHER',
+          newUser: false,
+          loginData: {
+            accessToken: 'oauth-access',
+            userId: 7,
+            email: 'kakao@test.com',
+            name: '카카오유저',
+            role: 'TEACHER',
+          },
         }),
       ),
     )
@@ -131,7 +133,7 @@ describe('oauthLogin', () => {
     server.use(
       http.post(url('/api/auth/oauth/kakao'), () =>
         HttpResponse.json({
-          isNewUser: true,
+          newUser: true,
           tempToken: 'temp-xyz',
           email: 'new@kakao.com',
           name: '신규유저',
