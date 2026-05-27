@@ -6,7 +6,8 @@ const KAKAO_AUTHORIZE_URL =
   `https://kauth.kakao.com/oauth/authorize` +
   `?client_id=${import.meta.env.VITE_KAKAO_CLIENT_ID}` +
   `&redirect_uri=${encodeURIComponent(import.meta.env.VITE_KAKAO_REDIRECT_URI ?? '')}` +
-  `&response_type=code`
+  `&response_type=code` +
+  `&prompt=login`
 
 export function LoginPage() {
   const {
