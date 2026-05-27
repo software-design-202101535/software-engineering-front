@@ -183,6 +183,7 @@ describe('oauthRegister', () => {
       await result.current.oauthRegister({
         tempToken: 'temp-xyz',
         role: 'STUDENT',
+        name: '신규유저',
         termsAgreed: true,
         privacyAgreed: true,
         studentInfo: { school: 'SUNRIN_HIGH_SCHOOL' },
@@ -205,6 +206,7 @@ describe('oauthRegister', () => {
         await result.current.oauthRegister({
           tempToken: 'expired',
           role: 'TEACHER',
+          name: '테스터',
           termsAgreed: true,
           privacyAgreed: true,
           teacherInfo: { school: 'SUNRIN_HIGH_SCHOOL' },
