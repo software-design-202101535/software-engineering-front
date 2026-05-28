@@ -29,11 +29,6 @@ const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
   ],
 }
 
-const NOTIFICATIONS_PATH: Partial<Record<UserRole, string>> = {
-  STUDENT: '/student/notifications',
-  PARENT: '/parent/notifications',
-}
-
 function ChildDropdown({
   children,
   selectedChildId,
@@ -59,22 +54,20 @@ function ChildDropdown({
   )
 }
 
-function NotificationBellButton({ path, unreadCount }: { path: string; unreadCount: number }) {
-  const navigate = useNavigate()
+function UnreadBadge({ count, variant }: { count: number; variant: 'inline' | 'corner' }) {
+  if (count <= 0) return null
+  const label = count > 99 ? '99+' : String(count)
+  if (variant === 'inline') {
+    return (
+      <span className="ml-auto min-w-5 h-5 px-1.5 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+        {label}
+      </span>
+    )
+  }
   return (
-    <button
-      type="button"
-      onClick={() => navigate(path)}
-      className="relative text-on-surface-variant hover:text-primary transition-colors"
-      aria-label="알림"
-    >
-      <span className="material-symbols-outlined">notifications</span>
-      {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      )}
-    </button>
+    <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+      {label}
+    </span>
   )
 }
 
@@ -96,7 +89,6 @@ export function AppLayout() {
       : firstChildId
 
   const navItems = (user?.role ? NAV_ITEMS[user.role] : undefined) ?? []
-  const notificationsPath = user?.role ? NOTIFICATIONS_PATH[user.role] : undefined
 
   const handleSelectChild = (id: number) => {
     setSearchParams((prev) => {
@@ -159,23 +151,34 @@ export function AppLayout() {
 
         {/* Nav */}
         <nav className="flex-1 px-2 py-4 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-primary text-on-primary'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-[20px] shrink-0">{item.icon}</span>
-              {isSidebarOpen && <span>{item.label}</span>}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const isNotificationItem = item.icon === 'notifications'
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={handleNavClick}
+                className={({ isActive }) =>
+                  `relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-primary text-on-primary'
+                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                  }`
+                }
+              >
+                <span className="relative material-symbols-outlined text-[20px] shrink-0">
+                  {item.icon}
+                  {isNotificationItem && !isSidebarOpen && (
+                    <UnreadBadge count={unreadCount} variant="corner" />
+                  )}
+                </span>
+                {isSidebarOpen && <span>{item.label}</span>}
+                {isNotificationItem && isSidebarOpen && (
+                  <UnreadBadge count={unreadCount} variant="inline" />
+                )}
+              </NavLink>
+            )
+          })}
         </nav>
 
         {/* User info */}
@@ -224,9 +227,6 @@ export function AppLayout() {
           </button>
           <div className="hidden md:block" />
           <div className="flex items-center gap-4">
-            {notificationsPath && (
-              <NotificationBellButton path={notificationsPath} unreadCount={unreadCount} />
-            )}
             <button className="text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined">settings</span>
             </button>
