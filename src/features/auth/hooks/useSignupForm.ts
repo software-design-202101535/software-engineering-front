@@ -14,7 +14,7 @@ export interface SignupFormFields {
   grade: string
   classNum: string
   number: string
-  childEmail: string
+  childEmails: string[]
 }
 
 const INITIAL_FIELDS: SignupFormFields = {
@@ -26,7 +26,7 @@ const INITIAL_FIELDS: SignupFormFields = {
   grade: '',
   classNum: '',
   number: '',
-  childEmail: '',
+  childEmails: [''],
 }
 
 async function submitByRole(
@@ -60,7 +60,10 @@ async function submitByRole(
       ...(fields.number ? { number: Number(fields.number) } : {}),
     })
   }
-  return registerParent({ ...base, childEmail: fields.childEmail })
+  return registerParent({
+    ...base,
+    childEmails: fields.childEmails.map((s) => s.trim()).filter(Boolean),
+  })
 }
 
 export function useSignupForm(role: SignupRole) {
@@ -73,10 +76,29 @@ export function useSignupForm(role: SignupRole) {
   const [isLoading, setIsLoading] = useState(false)
 
   const setField =
-    (key: keyof SignupFormFields) =>
+    (key: Exclude<keyof SignupFormFields, 'childEmails'>) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setFields((prev) => ({ ...prev, [key]: e.target.value }))
     }
+
+  const setChildEmailAt = (index: number, value: string) => {
+    setFields((prev) => {
+      const next = [...prev.childEmails]
+      next[index] = value
+      return { ...prev, childEmails: next }
+    })
+  }
+
+  const addChildEmail = () => {
+    setFields((prev) => ({ ...prev, childEmails: [...prev.childEmails, ''] }))
+  }
+
+  const removeChildEmailAt = (index: number) => {
+    setFields((prev) => {
+      if (prev.childEmails.length <= 1) return prev
+      return { ...prev, childEmails: prev.childEmails.filter((_, i) => i !== index) }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,6 +135,9 @@ export function useSignupForm(role: SignupRole) {
     fieldErrors,
     isLoading,
     setField,
+    setChildEmailAt,
+    addChildEmail,
+    removeChildEmailAt,
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,

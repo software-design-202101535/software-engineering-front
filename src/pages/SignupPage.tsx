@@ -28,6 +28,9 @@ export function SignupPage() {
     fieldErrors,
     isLoading,
     setField,
+    setChildEmailAt,
+    addChildEmail,
+    removeChildEmailAt,
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,
@@ -73,7 +76,16 @@ export function SignupPage() {
             <form onSubmit={handleSubmit} noValidate className="space-y-6">
               {activeRole === 'teacher' && <TeacherForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
               {activeRole === 'student' && <StudentForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
-              {activeRole === 'parent' && <ParentForm fields={fields} setField={setField} fieldErrors={fieldErrors} />}
+              {activeRole === 'parent' && (
+                <ParentForm
+                  fields={fields}
+                  setField={setField}
+                  fieldErrors={fieldErrors}
+                  setChildEmailAt={setChildEmailAt}
+                  addChildEmail={addChildEmail}
+                  removeChildEmailAt={removeChildEmailAt}
+                />
+              )}
 
               {/* Terms */}
               <div className="space-y-3 pt-2">
@@ -146,8 +158,14 @@ export function SignupPage() {
 
 interface FormProps {
   fields: SignupFormFields
-  setField: (key: keyof SignupFormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  setField: (key: Exclude<keyof SignupFormFields, 'childEmails'>) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   fieldErrors: Record<string, string>
+}
+
+interface ParentFormProps extends FormProps {
+  setChildEmailAt: (index: number, value: string) => void
+  addChildEmail: () => void
+  removeChildEmailAt: (index: number) => void
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -277,7 +295,14 @@ function StudentForm({ fields, setField, fieldErrors }: FormProps) {
   )
 }
 
-function ParentForm({ fields, setField, fieldErrors }: FormProps) {
+function ParentForm({
+  fields,
+  setField,
+  fieldErrors,
+  setChildEmailAt,
+  addChildEmail,
+  removeChildEmailAt,
+}: ParentFormProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -303,17 +328,68 @@ function ParentForm({ fields, setField, fieldErrors }: FormProps) {
           <input className={INPUT_CLASS} type="password" placeholder="••••••••" autoComplete="new-password" value={fields.passwordConfirm} onChange={setField('passwordConfirm')} />
         </div>
       </div>
-      <div className="space-y-4 pt-2">
-        <div>
-          <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">자녀 정보</p>
-          <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 이메일을 입력하면 자동으로 연결됩니다.</p>
-        </div>
-        <div className="space-y-1">
-          <label className={LABEL_CLASS}>자녀 이메일</label>
-          <input className={INPUT_CLASS} type="text" placeholder="자녀 계정 이메일" value={fields.childEmail} onChange={setField('childEmail')} />
-          <FieldError message={fieldErrors.childEmail} />
-        </div>
-      </div>
+      <ChildEmailList
+        childEmails={fields.childEmails}
+        fieldErrors={fieldErrors}
+        onChange={setChildEmailAt}
+        onAdd={addChildEmail}
+        onRemove={removeChildEmailAt}
+      />
     </>
+  )
+}
+
+interface ChildEmailListProps {
+  childEmails: string[]
+  fieldErrors: Record<string, string>
+  onChange: (index: number, value: string) => void
+  onAdd: () => void
+  onRemove: (index: number) => void
+}
+
+function ChildEmailList({ childEmails, fieldErrors, onChange, onAdd, onRemove }: ChildEmailListProps) {
+  const canRemove = childEmails.length > 1
+  return (
+    <div className="space-y-4 pt-2">
+      <div>
+        <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">자녀 정보</p>
+        <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 이메일을 입력하면 자동으로 연결됩니다. 여러 자녀를 연결하려면 [+ 자녀 추가]를 누르세요.</p>
+      </div>
+      <div className="space-y-1">
+        <label className={LABEL_CLASS}>자녀 이메일</label>
+        <div className="space-y-2">
+          {childEmails.map((email, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                className={`${INPUT_CLASS} flex-1`}
+                type="email"
+                placeholder="자녀 계정 이메일"
+                value={email}
+                onChange={(e) => onChange(i, e.target.value)}
+              />
+              {canRemove && (
+                <button
+                  type="button"
+                  onClick={() => onRemove(i)}
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                  aria-label={`자녀 이메일 ${i + 1} 삭제`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <FieldError message={fieldErrors.childEmails} />
+        <button
+          type="button"
+          onClick={onAdd}
+          className="mt-2 text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[16px]">add</span>
+          자녀 추가
+        </button>
+      </div>
+    </div>
   )
 }

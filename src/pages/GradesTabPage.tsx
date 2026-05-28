@@ -24,17 +24,13 @@ export function GradesTabPage() {
     isSelecting,
     selectedIds,
     editedScores,
-    newSubject,
-    newScore,
+    usedSubjects,
     bulkTarget,
     isApplyOpen,
     isSaving,
     setSubTab,
-    setTableMode,
     setBulkTarget,
     setIsApplyOpen,
-    setNewSubject,
-    setNewScore,
     handleSemesterChange,
     handleExamTypeChange,
     handleEdit,
@@ -42,8 +38,7 @@ export function GradesTabPage() {
     handleCancel,
     handleDelete,
     handleScoreChange,
-    handleConfirmAdd,
-    handleCancelAdd,
+    handleDraftSubjectChange,
     handleBulkConfirm,
     handleToggleSelect,
     handleToggleSelecting,
@@ -165,15 +160,6 @@ export function GradesTabPage() {
                       <>
                         <button
                           type="button"
-                          onClick={() => setTableMode('adding')}
-                          disabled={tableMode === 'adding'}
-                          className="flex items-center gap-1.5 px-3 py-2 text-sm text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-colors disabled:opacity-40"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">add</span>
-                          과목 추가
-                        </button>
-                        <button
-                          type="button"
                           onClick={handleCancel}
                           className="px-3 py-2 text-sm text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container transition-colors"
                         >
@@ -202,14 +188,10 @@ export function GradesTabPage() {
                   mode={tableMode}
                   editState={{
                     editedScores,
-                    newSubject,
-                    newScore,
+                    usedSubjects,
                     onScoreChange: handleScoreChange,
                     onDelete: handleDelete,
-                    onNewSubjectChange: setNewSubject,
-                    onNewScoreChange: setNewScore,
-                    onConfirmAdd: handleConfirmAdd,
-                    onCancelAdd: handleCancelAdd,
+                    onDraftSubjectChange: handleDraftSubjectChange,
                   }}
                 />
               </div>

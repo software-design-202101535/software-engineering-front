@@ -37,6 +37,12 @@ beforeEach(() => {
   )
 })
 
+// 수정 모드 진입 후 마지막 trailing empty draft의 tempId를 가져온다
+function getLastDraftId(result: { current: ReturnType<typeof useGradePage> }) {
+  const drafts = result.current.grades.filter((g) => g.id < 0)
+  return drafts[drafts.length - 1].id
+}
+
 describe('displayGrades', () => {
   it('서버 성적에서 pendingDeletes 항목을 제외한다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
@@ -45,36 +51,59 @@ describe('displayGrades', () => {
     expect(result.current.grades).toHaveLength(0)
   })
 
-  it('pendingCreates 항목을 displayGrades에 포함한다', async () => {
+  it('수정 모드 진입 시 trailing empty draft 1개가 자동 추가된다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
     await waitFor(() => expect(result.current.grades).toHaveLength(1))
-    act(() => {
-      result.current.setNewSubject('ENGLISH')
-      result.current.setNewScore('90')
-    })
-    act(() => { result.current.handleConfirmAdd() })
+    act(() => { result.current.handleEdit() })
     expect(result.current.grades).toHaveLength(2)
     expect(result.current.grades.some((g) => g.id < 0)).toBe(true)
   })
 })
 
-describe('handleConfirmAdd', () => {
-  it('음수 tempId를 발급한다', () => {
-    const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
-    act(() => {
-      result.current.setNewSubject('MATH')
-      result.current.setNewScore('85')
-    })
-    act(() => { result.current.handleConfirmAdd() })
-    const tempId = result.current.grades.find((g) => g.id < 0)?.id
-    expect(tempId).toBeLessThan(0)
-  })
-
-  it('subject나 score가 비어있으면 추가하지 않는다', async () => {
+describe('handleDraftSubjectChange', () => {
+  it('마지막 trailing draft에 과목을 선택하면 새 빈 draft가 자동 추가된다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
     await waitFor(() => expect(result.current.grades).toHaveLength(1))
-    act(() => { result.current.handleConfirmAdd() })
-    expect(result.current.grades).toHaveLength(1)
+    act(() => { result.current.handleEdit() })
+    const firstDraftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(firstDraftId, 'ENGLISH') })
+    const drafts = result.current.grades.filter((g) => g.id < 0)
+    expect(drafts).toHaveLength(2)
+    expect(drafts[drafts.length - 1].subject).toBe('')
+  })
+
+  it('인변량: 어떤 상태에서도 마지막 draft는 항상 빈 행이어야 한다', async () => {
+    const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const firstDraftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(firstDraftId, 'ENGLISH') })
+    // 첫 draft 비웠다가 새 마지막 draft 채워도 결국 trailing empty가 유지돼야 함
+    act(() => { result.current.handleDraftSubjectChange(firstDraftId, '') })
+    const lastEmptyDraftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(lastEmptyDraftId, 'KOREAN') })
+    const drafts = result.current.grades.filter((g) => g.id < 0)
+    expect(drafts[drafts.length - 1].subject).toBe('')
+  })
+})
+
+describe('usedSubjects', () => {
+  it('기존 성적과 draft에 선택된 과목을 모두 포함한다', async () => {
+    const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const draftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(draftId, 'ENGLISH') })
+    expect(result.current.usedSubjects.has('MATH')).toBe(true)
+    expect(result.current.usedSubjects.has('ENGLISH')).toBe(true)
+    expect(result.current.usedSubjects.has('KOREAN')).toBe(false)
+  })
+
+  it('pendingDeletes에 들어간 기존 과목은 제외된다', async () => {
+    const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleDelete(1) })
+    expect(result.current.usedSubjects.has('MATH')).toBe(false)
   })
 })
 
@@ -86,16 +115,14 @@ describe('handleScoreChange', () => {
     expect(result.current.editedScores[1]).toBe('95')
   })
 
-  it('음수 id → pendingCreates의 score를 업데이트한다', () => {
+  it('음수 id → 해당 draft의 score를 업데이트한다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
-    act(() => {
-      result.current.setNewSubject('MATH')
-      result.current.setNewScore('70')
-    })
-    act(() => { result.current.handleConfirmAdd() })
-    const tempId = result.current.grades.find((g) => g.id < 0)!.id
-    act(() => { result.current.handleScoreChange(tempId, '99') })
-    expect(result.current.grades.find((g) => g.id === tempId)?.score).toBe(99)
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const draftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(draftId, 'ENGLISH') })
+    act(() => { result.current.handleScoreChange(draftId, '99') })
+    expect(result.current.grades.find((g) => g.id === draftId)?.score).toBe(99)
   })
 })
 
@@ -107,16 +134,16 @@ describe('handleDelete', () => {
     expect(result.current.grades).toHaveLength(0)
   })
 
-  it('음수 id → pendingCreates에서 제거한다', () => {
+  it('음수 id → draft를 제거하되 trailing empty는 항상 유지된다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
-    act(() => {
-      result.current.setNewSubject('MATH')
-      result.current.setNewScore('70')
-    })
-    act(() => { result.current.handleConfirmAdd() })
-    const tempId = result.current.grades.find((g) => g.id < 0)!.id
-    act(() => { result.current.handleDelete(tempId) })
-    expect(result.current.grades.every((g) => g.id >= 0)).toBe(true)
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const firstDraftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(firstDraftId, 'ENGLISH') })
+    act(() => { result.current.handleDelete(firstDraftId) })
+    const drafts = result.current.grades.filter((g) => g.id < 0)
+    expect(drafts).toHaveLength(1)
+    expect(drafts[0].subject).toBe('')
   })
 })
 
@@ -124,11 +151,9 @@ describe('handleSemesterChange', () => {
   it('tableMode를 read로 변경하고 pendingCreates를 초기화한다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
     await waitFor(() => expect(result.current.grades).toHaveLength(1))
-    act(() => {
-      result.current.setNewSubject('MATH')
-      result.current.setNewScore('70')
-    })
-    act(() => { result.current.handleConfirmAdd() })
+    act(() => { result.current.handleEdit() })
+    const draftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(draftId, 'ENGLISH') })
     expect(result.current.grades.some((g) => g.id < 0)).toBe(true)
     act(() => { result.current.handleSemesterChange('2026-2') })
     expect(result.current.tableMode).toBe('read')
@@ -168,7 +193,7 @@ describe('handleSave', () => {
     expect(result.current.tableMode).toBe('read')
   })
 
-  it('신규 항목이 있으면 create payload를 포함한다', async () => {
+  it('과목이 선택된 draft만 create payload에 포함한다 (빈 trailing은 제외)', async () => {
     const spy = vi.fn()
     server.use(
       http.put(url('/api/students/1/grades/batch'), async ({ request }) => {
@@ -177,11 +202,11 @@ describe('handleSave', () => {
       }),
     )
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
-    act(() => {
-      result.current.setNewSubject('ENGLISH')
-      result.current.setNewScore('88')
-    })
-    act(() => { result.current.handleConfirmAdd() })
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const draftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(draftId, 'ENGLISH') })
+    act(() => { result.current.handleScoreChange(draftId, '88') })
     await act(async () => { await result.current.handleSave() })
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ create: [{ subject: 'ENGLISH', score: 88 }] }),
@@ -190,14 +215,12 @@ describe('handleSave', () => {
 })
 
 describe('handleCancel', () => {
-  it('tableMode를 read로 되돌리고 pendingCreates를 초기화한다', () => {
+  it('tableMode를 read로 되돌리고 pendingCreates를 초기화한다', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
-    act(() => { result.current.setTableMode('edit') })
-    act(() => {
-      result.current.setNewSubject('MATH')
-      result.current.setNewScore('70')
-    })
-    act(() => { result.current.handleConfirmAdd() })
+    await waitFor(() => expect(result.current.grades).toHaveLength(1))
+    act(() => { result.current.handleEdit() })
+    const draftId = getLastDraftId(result)
+    act(() => { result.current.handleDraftSubjectChange(draftId, 'ENGLISH') })
     expect(result.current.grades.some((g) => g.id < 0)).toBe(true)
     act(() => { result.current.handleCancel() })
     expect(result.current.tableMode).toBe('read')
@@ -206,7 +229,7 @@ describe('handleCancel', () => {
 })
 
 describe('avg', () => {
-  it('displayGrades의 점수 평균을 계산한다', async () => {
+  it('displayGrades의 점수 평균을 계산한다 (빈 draft 제외)', async () => {
     const { result } = renderHook(() => useGradePage(), { wrapper: makeWrapper() })
     await waitFor(() => expect(result.current.grades).toHaveLength(1))
     expect(result.current.avg).toBe(80)

@@ -105,7 +105,7 @@ export interface KakaoStudentInfo {
 }
 
 export interface KakaoParentInfo {
-  childEmail: string
+  childEmails: string[]
 }
 
 export interface KakaoRegisterRequest {
@@ -150,7 +150,7 @@ export interface ParentRegisterRequest {
   password: string
   passwordConfirm: string
   name: string
-  childEmail: string
+  childEmails: string[]
   termsAgreed: boolean
   privacyAgreed: boolean
 }

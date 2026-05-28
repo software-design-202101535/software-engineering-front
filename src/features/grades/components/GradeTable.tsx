@@ -2,18 +2,14 @@ import type { Grade, SubjectCode } from '@/types'
 import { SUBJECT_LABEL } from '@/types'
 import { ALL_SUBJECTS } from '../constants'
 
-export type TableMode = 'read' | 'edit' | 'adding'
+export type TableMode = 'read' | 'edit'
 
 export interface EditState {
   editedScores: Record<number, string>
-  newSubject: SubjectCode | ''
-  newScore: string
+  usedSubjects: Set<SubjectCode>
   onScoreChange: (id: number, value: string) => void
   onDelete: (id: number) => void
-  onNewSubjectChange: (v: SubjectCode | '') => void
-  onNewScoreChange: (v: string) => void
-  onConfirmAdd: () => void
-  onCancelAdd: () => void
+  onDraftSubjectChange: (tempId: number, subject: SubjectCode | '') => void
 }
 
 interface GradeTableProps {
@@ -50,7 +46,7 @@ export function GradeTable({ grades, mode, editState }: GradeTableProps) {
     )
   }
 
-  const isEditing = (mode === 'edit' || mode === 'adding') && editState !== undefined
+  const isEditing = mode === 'edit' && editState !== undefined
 
   return (
     <table className="w-full text-sm">
@@ -70,6 +66,7 @@ export function GradeTable({ grades, mode, editState }: GradeTableProps) {
       </thead>
       <tbody>
         {grades.map((g) => {
+          const isDraft = g.id < 0
           const editVal = editState?.editedScores[g.id]
           const displayScore = editVal !== undefined ? editVal : (g.score !== null ? String(g.score) : '')
           const liveScore = editVal !== undefined ? Number(editVal) : g.score
@@ -83,10 +80,29 @@ export function GradeTable({ grades, mode, editState }: GradeTableProps) {
           return (
             <tr
               key={g.id}
-              className="border-b border-surface-container hover:bg-surface-container-low/50 transition-colors"
+              className={`border-b border-surface-container ${isDraft ? 'bg-surface-container-low/30' : 'hover:bg-surface-container-low/50'} transition-colors`}
             >
               <td className="py-3 px-4 font-medium text-on-surface">
-                {SUBJECT_LABEL[g.subject] ?? g.subject}
+                {isDraft && isEditing ? (
+                  <select
+                    value={g.subject || ''}
+                    onChange={(e) => editState!.onDraftSubjectChange(g.id, e.target.value as SubjectCode | '')}
+                    className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:border-primary focus:ring-0 px-2 py-1 text-sm text-on-surface rounded-t-lg"
+                  >
+                    <option value="">과목 선택</option>
+                    {ALL_SUBJECTS.map((code) => (
+                      <option
+                        key={code}
+                        value={code}
+                        disabled={editState!.usedSubjects.has(code) && code !== g.subject}
+                      >
+                        {SUBJECT_LABEL[code]}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  SUBJECT_LABEL[g.subject] ?? g.subject
+                )}
               </td>
               <td className="py-3 px-4 text-right">
                 {isEditing ? (
@@ -114,77 +130,22 @@ export function GradeTable({ grades, mode, editState }: GradeTableProps) {
               </td>
               {isEditing && (
                 <td className="py-3 px-2">
-                  <button
-                    type="button"
-                    onClick={() => editState!.onDelete(g.id)}
-                    className="text-on-surface-variant hover:text-error transition-colors p-1"
-                    title="삭제"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
+                  {/* 마지막 trailing empty draft는 삭제 버튼 숨김 (자동 재생성됨) */}
+                  {!(isDraft && !g.subject) && (
+                    <button
+                      type="button"
+                      onClick={() => editState!.onDelete(g.id)}
+                      className="text-on-surface-variant hover:text-error transition-colors p-1"
+                      title="삭제"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  )}
                 </td>
               )}
             </tr>
           )
         })}
-
-        {/* 과목 추가 행 (adding 모드) */}
-        {mode === 'adding' && editState && (
-          <tr className="border-b border-primary/30 bg-surface-container-low/30">
-            <td className="py-3 px-4">
-              <select
-                value={editState.newSubject}
-                onChange={(e) => editState.onNewSubjectChange(e.target.value as SubjectCode | '')}
-                className="w-full bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:border-primary focus:ring-0 px-2 py-1 text-sm text-on-surface rounded-t-lg"
-                autoFocus
-              >
-                <option value="">과목 선택</option>
-                {ALL_SUBJECTS.map((code) => (
-                  <option key={code} value={code}>
-                    {SUBJECT_LABEL[code]}
-                  </option>
-                ))}
-              </select>
-            </td>
-            <td className="py-3 px-4 text-right">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                placeholder="0~100"
-                value={editState.newScore}
-                onChange={(e) => editState.onNewScoreChange(e.target.value)}
-                className="w-20 text-right bg-surface-container-low border-0 border-b-2 border-primary-fixed-dim focus:border-primary focus:ring-0 px-2 py-1 text-sm text-on-surface rounded-t-lg"
-              />
-            </td>
-            <td className="py-3 px-4 text-center">
-              <span className="text-xs text-on-surface-variant">
-                {editState.newScore ? GRADE_LABELS[calcGrade(Number(editState.newScore)) ?? ''] ?? '-' : '-'}
-              </span>
-            </td>
-            <td className="py-3 px-2">
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={editState.onConfirmAdd}
-                  disabled={!editState.newSubject || !editState.newScore}
-                  className="text-primary hover:text-primary-dim transition-colors p-1 disabled:opacity-40"
-                  title="추가 확인"
-                >
-                  <span className="material-symbols-outlined text-[18px]">check</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={editState.onCancelAdd}
-                  className="text-on-surface-variant hover:text-error transition-colors p-1"
-                  title="추가 닫기"
-                >
-                  <span className="material-symbols-outlined text-[18px]">close</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        )}
       </tbody>
     </table>
   )

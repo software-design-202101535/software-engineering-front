@@ -72,6 +72,9 @@ function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
     isLoading,
     setRole,
     setField,
+    setChildEmailAt,
+    addChildEmail,
+    removeChildEmailAt,
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,
@@ -110,7 +113,16 @@ function OAuthCompleteForm({ tempToken, email, name }: FormProps) {
               <form onSubmit={handleSubmit} noValidate className="space-y-6">
                 {role === 'TEACHER' && <TeacherFormFields fields={fields} setField={setField} fieldErrors={fieldErrors} />}
                 {role === 'STUDENT' && <StudentFormFields fields={fields} setField={setField} fieldErrors={fieldErrors} />}
-                {role === 'PARENT' && <ParentFormFields fields={fields} setField={setField} fieldErrors={fieldErrors} />}
+                {role === 'PARENT' && (
+                  <ParentFormFields
+                    fields={fields}
+                    setField={setField}
+                    fieldErrors={fieldErrors}
+                    setChildEmailAt={setChildEmailAt}
+                    addChildEmail={addChildEmail}
+                    removeChildEmailAt={removeChildEmailAt}
+                  />
+                )}
 
                 <TermsCheckboxes
                   termsChecked={termsChecked}
@@ -328,8 +340,14 @@ function SubmitButton({ isLoading }: { isLoading: boolean }) {
 
 interface FieldsProps {
   fields: OAuthFormFields
-  setField: (key: keyof OAuthFormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  setField: (key: Exclude<keyof OAuthFormFields, 'childEmails'>) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   fieldErrors: Record<string, string>
+}
+
+interface ParentFieldsProps extends FieldsProps {
+  setChildEmailAt: (index: number, value: string) => void
+  addChildEmail: () => void
+  removeChildEmailAt: (index: number) => void
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -413,17 +431,54 @@ function StudentFormFields({ fields, setField, fieldErrors }: FieldsProps) {
   )
 }
 
-function ParentFormFields({ fields, setField, fieldErrors }: FieldsProps) {
+function ParentFormFields({
+  fields,
+  fieldErrors,
+  setChildEmailAt,
+  addChildEmail,
+  removeChildEmailAt,
+}: ParentFieldsProps) {
+  const canRemove = fields.childEmails.length > 1
   return (
     <div className="space-y-4">
       <div>
         <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">자녀 정보</p>
-        <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 이메일을 입력하면 자동으로 연결됩니다.</p>
+        <p className="text-xs text-on-surface-variant ml-1 mt-1">자녀의 이메일을 입력하면 자동으로 연결됩니다. 여러 자녀를 연결하려면 [+ 자녀 추가]를 누르세요.</p>
       </div>
       <div className="space-y-1">
         <label className={LABEL_CLASS}>자녀 이메일</label>
-        <input className={INPUT_CLASS} type="email" placeholder="자녀 계정 이메일" value={fields.childEmail} onChange={setField('childEmail')} />
-        <FieldError message={fieldErrors.childEmail} />
+        <div className="space-y-2">
+          {fields.childEmails.map((email, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                className={`${INPUT_CLASS} flex-1`}
+                type="email"
+                placeholder="자녀 계정 이메일"
+                value={email}
+                onChange={(e) => setChildEmailAt(i, e.target.value)}
+              />
+              {canRemove && (
+                <button
+                  type="button"
+                  onClick={() => removeChildEmailAt(i)}
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                  aria-label={`자녀 이메일 ${i + 1} 삭제`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <FieldError message={fieldErrors.childEmails} />
+        <button
+          type="button"
+          onClick={addChildEmail}
+          className="mt-2 text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[16px]">add</span>
+          자녀 추가
+        </button>
       </div>
     </div>
   )

@@ -19,7 +19,7 @@ export interface OAuthFormFields {
   grade: string
   classNum: string
   number: string
-  childEmail: string
+  childEmails: string[]
 }
 
 const INITIAL_FIELDS_BASE: Omit<OAuthFormFields, 'name' | 'email'> = {
@@ -27,7 +27,7 @@ const INITIAL_FIELDS_BASE: Omit<OAuthFormFields, 'name' | 'email'> = {
   grade: '',
   classNum: '',
   number: '',
-  childEmail: '',
+  childEmails: [''],
 }
 
 function buildPayload(
@@ -68,7 +68,9 @@ function buildPayload(
   }
   return {
     ...base,
-    parentInfo: { childEmail: fields.childEmail },
+    parentInfo: {
+      childEmails: fields.childEmails.map((s) => s.trim()).filter(Boolean),
+    },
   }
 }
 
@@ -97,10 +99,29 @@ export function useOAuthCompleteForm(tempToken: string, initialEmail = '', initi
   const [isLoading, setIsLoading] = useState(false)
 
   const setField =
-    (key: keyof OAuthFormFields) =>
+    (key: Exclude<keyof OAuthFormFields, 'childEmails'>) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setFields((prev) => ({ ...prev, [key]: e.target.value }))
     }
+
+  const setChildEmailAt = (index: number, value: string) => {
+    setFields((prev) => {
+      const next = [...prev.childEmails]
+      next[index] = value
+      return { ...prev, childEmails: next }
+    })
+  }
+
+  const addChildEmail = () => {
+    setFields((prev) => ({ ...prev, childEmails: [...prev.childEmails, ''] }))
+  }
+
+  const removeChildEmailAt = (index: number) => {
+    setFields((prev) => {
+      if (prev.childEmails.length <= 1) return prev
+      return { ...prev, childEmails: prev.childEmails.filter((_, i) => i !== index) }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,6 +159,9 @@ export function useOAuthCompleteForm(tempToken: string, initialEmail = '', initi
     isLoading,
     setRole,
     setField,
+    setChildEmailAt,
+    addChildEmail,
+    removeChildEmailAt,
     setTermsChecked,
     setPrivacyChecked,
     handleSubmit,

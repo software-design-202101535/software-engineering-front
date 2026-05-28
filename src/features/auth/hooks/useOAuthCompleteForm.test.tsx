@@ -121,8 +121,8 @@ describe('handleSubmit - 역할별 payload 빌드', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/student/grades', { replace: true })
   })
 
-  it('PARENT 역할이면 parentInfo.childEmail이 포함된 payload를 전송한다', async () => {
-    let received: { role?: string; parentInfo?: { childEmail?: string } } = {}
+  it('PARENT 역할이면 parentInfo.childEmails가 포함된 payload를 전송한다', async () => {
+    let received: { role?: string; parentInfo?: { childEmails?: string[] } } = {}
     server.use(
       http.post(url('/api/auth/oauth/kakao/register'), async ({ request }) => {
         received = (await request.json()) as typeof received
@@ -136,12 +136,39 @@ describe('handleSubmit - 역할별 payload 빌드', () => {
       result.current.setPrivacyChecked(true)
     })
     act(() => {
-      result.current.setField('childEmail')({ target: { value: 'child@test.com' } } as never)
+      result.current.setChildEmailAt(0, 'child1@test.com')
+      result.current.addChildEmail()
+    })
+    act(() => {
+      result.current.setChildEmailAt(1, 'child2@test.com')
     })
     await act(async () => { await result.current.handleSubmit(fakeEvent) })
     expect(received.role).toBe('PARENT')
-    expect(received.parentInfo?.childEmail).toBe('child@test.com')
+    expect(received.parentInfo?.childEmails).toEqual(['child1@test.com', 'child2@test.com'])
     expect(mockNavigate).toHaveBeenCalledWith('/parent/grades', { replace: true })
+  })
+
+  it('PARENT 역할의 빈 자녀 이메일은 payload에서 제외된다', async () => {
+    let received: { parentInfo?: { childEmails?: string[] } } = {}
+    server.use(
+      http.post(url('/api/auth/oauth/kakao/register'), async ({ request }) => {
+        received = (await request.json()) as typeof received
+        return HttpResponse.json(makeLoginResponse('PARENT'))
+      }),
+    )
+    const { result } = renderHook(() => useOAuthCompleteForm('tk-parent-empty'), { wrapper })
+    act(() => {
+      result.current.setRole('PARENT')
+      result.current.setTermsChecked(true)
+      result.current.setPrivacyChecked(true)
+      result.current.addChildEmail()
+      result.current.addChildEmail()
+    })
+    act(() => {
+      result.current.setChildEmailAt(1, '  child2@test.com  ')
+    })
+    await act(async () => { await result.current.handleSubmit(fakeEvent) })
+    expect(received.parentInfo?.childEmails).toEqual(['child2@test.com'])
   })
 
   it('비어있는 학년/반/번호는 payload에서 제외한다', async () => {

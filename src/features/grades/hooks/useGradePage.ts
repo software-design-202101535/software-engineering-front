@@ -14,7 +14,7 @@ type BulkTarget = 'class' | 'selected'
 
 type PendingCreate = {
   tempId: number
-  subject: SubjectCode
+  subject: SubjectCode | ''
   score: number | null
 }
 
@@ -36,6 +36,8 @@ export function useGradePage() {
   const queryClient = useQueryClient()
   const tempIdRef = useRef(-1)
 
+  const newTempId = () => tempIdRef.current--
+
   const [semester, setSemester] = useState('2026-1')
   const [examType, setExamType] = useState<ExamType>('MIDTERM')
   const [subTab, setSubTab] = useState<SubTab>('list')
@@ -43,8 +45,6 @@ export function useGradePage() {
   const [isSelecting, setIsSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [editedScores, setEditedScores] = useState<Record<number, string>>({})
-  const [newSubject, setNewSubject] = useState<SubjectCode | ''>('')
-  const [newScore, setNewScore] = useState('')
   const [bulkTarget, setBulkTarget] = useState<BulkTarget | null>(null)
   const [isApplyOpen, setIsApplyOpen] = useState(false)
   const [pendingDeletes, setPendingDeletes] = useState<number[]>([])
@@ -60,21 +60,35 @@ export function useGradePage() {
     ...grades.filter((g) => !pendingDeletes.includes(g.id)),
     ...pendingCreates.map((c) => ({
       id: c.tempId,
-      subject: c.subject,
+      subject: (c.subject || '') as SubjectCode,
       score: c.score,
       grade: null as Grade['grade'],
     })),
   ]
 
-  const avg = calculateAverage(displayGrades)
-  const radarData = displayGrades.map((g) => ({ subject: SUBJECT_LABEL[g.subject] ?? g.subject, score: g.score }))
+  // 평균 계산 시 빈 과목(아직 선택 안된 trailing draft)은 제외
+  const avg = calculateAverage(
+    displayGrades.filter((g) => g.subject !== ('' as SubjectCode)),
+  )
+  const radarData = displayGrades
+    .filter((g) => g.subject !== ('' as SubjectCode))
+    .map((g) => ({ subject: SUBJECT_LABEL[g.subject] ?? g.subject, score: g.score }))
+
+  const usedSubjects = new Set<SubjectCode>([
+    ...grades.filter((g) => !pendingDeletes.includes(g.id)).map((g) => g.subject),
+    ...pendingCreates
+      .map((c) => c.subject)
+      .filter((s): s is SubjectCode => s !== ''),
+  ])
 
   const resetPendingState = () => {
     setEditedScores({})
     setPendingDeletes([])
     setPendingCreates([])
-    setNewSubject('')
-    setNewScore('')
+  }
+
+  const initEditDrafts = () => {
+    setPendingCreates([{ tempId: newTempId(), subject: '', score: null }])
   }
 
   const handleSemesterChange = (v: string) => {
@@ -91,13 +105,16 @@ export function useGradePage() {
 
   const handleEdit = () => {
     resetPendingState()
+    initEditDrafts()
     setTableMode('edit')
   }
 
   const handleSave = async () => {
     if (batchMutation.isPending) return
     const update = buildUpdateItems(editedScores, grades)
-    const create = pendingCreates.map((c) => ({ subject: c.subject, score: c.score }))
+    const create = pendingCreates
+      .filter((c) => c.subject !== '')
+      .map((c) => ({ subject: c.subject as SubjectCode, score: c.score }))
     const del = pendingDeletes
 
     if (update.length > 0 || create.length > 0 || del.length > 0) {
@@ -120,7 +137,14 @@ export function useGradePage() {
 
   const handleDelete = (id: number) => {
     if (id < 0) {
-      setPendingCreates((prev) => prev.filter((c) => c.tempId !== id))
+      setPendingCreates((prev) => {
+        const next = prev.filter((c) => c.tempId !== id)
+        // 마지막 줄이 비어있지 않으면 새 trailing empty 행 추가
+        if (next.length === 0 || next[next.length - 1].subject !== '') {
+          next.push({ tempId: newTempId(), subject: '', score: null })
+        }
+        return next
+      })
     } else {
       setPendingDeletes((prev) => [...prev, id])
     }
@@ -136,22 +160,16 @@ export function useGradePage() {
     }
   }
 
-  const handleConfirmAdd = () => {
-    if (!newSubject.trim() || !newScore) return
-    const tempId = tempIdRef.current--
-    setPendingCreates((prev) => [
-      ...prev,
-      { tempId, subject: newSubject as SubjectCode, score: Number(newScore) },
-    ])
-    setNewSubject('')
-    setNewScore('')
-    setTableMode('edit')
-  }
-
-  const handleCancelAdd = () => {
-    setNewSubject('')
-    setNewScore('')
-    setTableMode('edit')
+  const handleDraftSubjectChange = (tempId: number, subject: SubjectCode | '') => {
+    setPendingCreates((prev) => {
+      const next = prev.map((c) => c.tempId === tempId ? { ...c, subject } : c)
+      // 인변량: 마지막 행은 항상 빈 행. 아니면 새 trailing empty 추가
+      const last = next[next.length - 1]
+      if (!last || last.subject !== '') {
+        next.push({ tempId: newTempId(), subject: '', score: null })
+      }
+      return next
+    })
   }
 
   const handleBulkConfirm = async (subjects: string[]) => {
@@ -200,8 +218,7 @@ export function useGradePage() {
     isSelecting,
     selectedIds,
     editedScores,
-    newSubject,
-    newScore,
+    usedSubjects,
     bulkTarget,
     isApplyOpen,
     isSaving: batchMutation.isPending,
@@ -209,8 +226,6 @@ export function useGradePage() {
     setTableMode,
     setBulkTarget,
     setIsApplyOpen,
-    setNewSubject,
-    setNewScore,
     handleSemesterChange,
     handleExamTypeChange,
     handleEdit,
@@ -218,8 +233,7 @@ export function useGradePage() {
     handleCancel,
     handleDelete,
     handleScoreChange,
-    handleConfirmAdd,
-    handleCancelAdd,
+    handleDraftSubjectChange,
     handleBulkConfirm,
     handleToggleSelect,
     handleToggleSelecting,
