@@ -18,6 +18,7 @@ import { FeedbackTabPage } from '@/pages/FeedbackTabPage'
 import { StudentFeedbackPage } from '@/pages/StudentFeedbackPage'
 import { ParentFeedbackPage } from '@/pages/ParentFeedbackPage'
 import { CounselingTabPage } from '@/pages/CounselingTabPage'
+import { SharedCounselingPage } from '@/pages/SharedCounselingPage'
 import { NotificationsPage } from '@/pages/NotificationsPage'
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
           {/* 교사 — 학생 목록 (사이드바 포함) */}
           <Route element={<AppLayout />}>
             <Route path="/students" element={<StudentsPage />} />
+            <Route path="/shared-counseling" element={<SharedCounselingPage />} />
             <Route path="/dashboard" element={<Navigate to="/students" replace />} />
           </Route>
 
