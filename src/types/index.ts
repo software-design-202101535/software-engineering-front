@@ -239,6 +239,14 @@ export interface CounselingRequest {
   sharedWithTeachers: boolean
 }
 
+// 공유 상담 목록(다른 교사가 sharedWithTeachers=true로 공유)용 — 학생 컨텍스트 포함
+export interface SharedCounseling extends Counseling {
+  studentName: string
+  grade: number
+  classNum: number
+  number: number
+}
+
 export type NoteCategory = 'ACHIEVEMENT' | 'SPECIAL' | 'VOLUNTEER' | 'CAREER' | 'OTHER'
 
 export interface Note {
