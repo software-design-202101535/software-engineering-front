@@ -303,6 +303,63 @@ export interface Notification {
   createdAt: string
 }
 
+// ── 분석(통계/석차) — GET /api/analytics/* (백엔드 feat-11) ──
+export type GradeLevel = 'A' | 'B' | 'C' | 'D' | 'F'
+export type GradeDistribution = Record<GradeLevel, number>
+
+export interface SubjectSummary {
+  subject: SubjectCode
+  avgScore: number
+  maxScore: number
+  minScore: number
+  studentCount: number
+  distribution: GradeDistribution
+}
+
+// GET /api/analytics/class-summary 응답. classNum=null이면 학년 전체 집계.
+export interface ClassSummary {
+  school: SchoolType
+  grade: number
+  classNum: number | null
+  semester: string
+  updatedAt: string
+  subjects: SubjectSummary[]
+}
+
+export interface ClassSummaryParams {
+  school: SchoolType
+  grade: number
+  classNum?: number  // 생략 시 학년 전체
+  semester: string
+  subject?: SubjectCode  // 생략 시 전 과목
+}
+
+export interface RankDetail {
+  rank: number
+  totalCount: number
+  percentile: number
+  avgScore: number
+}
+
+export interface SubjectRank extends RankDetail {
+  subject: SubjectCode
+  gradeLevel: GradeLevel
+}
+
+export interface RankScope {
+  overall: RankDetail
+  subjects: SubjectRank[]
+}
+
+// GET /api/analytics/students/{id}/ranks 응답. 집계 전이면 class/grade가 null.
+export interface StudentRanks {
+  studentId: number
+  semester: string
+  updatedAt: string
+  class: RankScope | null
+  grade: RankScope | null
+}
+
 export interface GradeReport {
   student: Student
   grades: Grade[]
