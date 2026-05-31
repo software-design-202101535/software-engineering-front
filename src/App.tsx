@@ -18,6 +18,7 @@ import { StudentFeedbackPage } from '@/pages/StudentFeedbackPage'
 import { ParentFeedbackPage } from '@/pages/ParentFeedbackPage'
 import { CounselingTabPage } from '@/pages/CounselingTabPage'
 import { SharedCounselingPage } from '@/pages/SharedCounselingPage'
+import { AnalyticsPage } from '@/pages/AnalyticsPage'
 import { NotificationsPage } from '@/pages/NotificationsPage'
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/shared-counseling" element={<SharedCounselingPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/dashboard" element={<Navigate to="/students" replace />} />
           </Route>
 
