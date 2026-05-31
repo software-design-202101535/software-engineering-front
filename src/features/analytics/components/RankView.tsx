@@ -1,7 +1,8 @@
 import { useStudentRanks } from '../hooks/useStudentRanks'
-import type { RankDetail, RankScope, SubjectRank, SubjectCode } from '@/types'
+import type { RankDetail, SubjectRank, SubjectCode } from '@/types'
 import { SUBJECT_LABEL } from '@/types'
 import { GRADE_COLORS } from '../constants'
+import { mergeSubjectRanks } from '../utils/mergeSubjectRanks'
 import { AnalyticsEmpty } from './AnalyticsEmpty'
 
 interface RankViewProps {
@@ -30,23 +31,6 @@ function RankSummaryCard({ title, detail }: { title: string; detail: RankDetail 
       )}
     </div>
   )
-}
-
-// class/grade 과목별 석차를 과목 키로 머지
-function mergeSubjectRanks(
-  classScope: RankScope | null,
-  gradeScope: RankScope | null,
-): { subject: SubjectCode; classRank: SubjectRank | undefined; gradeRank: SubjectRank | undefined }[] {
-  const classMap = new Map(classScope?.subjects.map((s) => [s.subject, s]) ?? [])
-  const gradeMap = new Map(gradeScope?.subjects.map((s) => [s.subject, s]) ?? [])
-  const order: SubjectCode[] = []
-  for (const s of classScope?.subjects ?? []) order.push(s.subject)
-  for (const s of gradeScope?.subjects ?? []) if (!classMap.has(s.subject)) order.push(s.subject)
-  return order.map((subject) => ({
-    subject,
-    classRank: classMap.get(subject),
-    gradeRank: gradeMap.get(subject),
-  }))
 }
 
 function RankCell({ rank }: { rank: SubjectRank | undefined }) {
