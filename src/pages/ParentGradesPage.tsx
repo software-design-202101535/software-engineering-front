@@ -2,12 +2,19 @@ import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useGrades, SemesterSelector, GradeTable, RadarChart } from '@/features/grades'
+import { RankView } from '@/features/analytics'
 import { fetchStudent } from '@/api/students'
 import { calculateAverage } from '@/utils/gradeUtils'
 import type { ExamType } from '@/types'
 import { SUBJECT_LABEL } from '@/types'
 
-type SubTab = 'list' | 'chart'
+type SubTab = 'list' | 'chart' | 'rank'
+
+const SUB_TABS: { key: SubTab; label: string }[] = [
+  { key: 'list', label: '목록' },
+  { key: 'chart', label: '시각화' },
+  { key: 'rank', label: '석차' },
+]
 
 export function ParentGradesPage() {
   const { selectedChildId } = useOutletContext<{ selectedChildId: number }>()
@@ -52,47 +59,50 @@ export function ParentGradesPage() {
           onExamTypeChange={setExamType}
         />
         <div className="ml-auto flex items-center gap-1 bg-surface-container rounded-lg p-0.5">
-          {(['list', 'chart'] as SubTab[]).map((t) => (
+          {SUB_TABS.map((t) => (
             <button
-              key={t}
+              key={t.key}
               type="button"
-              onClick={() => setSubTab(t)}
+              onClick={() => setSubTab(t.key)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                subTab === t
+                subTab === t.key
                   ? 'bg-surface-container-lowest text-primary shadow-sm'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              {t === 'list' ? '목록' : '시각화'}
+              {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="py-16 text-center text-on-surface-variant text-sm">불러오는 중...</div>
-      ) : subTab === 'list' ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-surface-container">
-          <div className="px-6 py-4 flex items-center justify-between border-b border-surface-container">
-            <h3 className="font-headline text-base font-semibold text-on-surface">성적 목록</h3>
-            {grades.length > 0 && (
-              <span className="text-sm text-on-surface-variant">
-                평균 <span className="font-semibold text-primary">{avg}점</span>
-              </span>
+      {subTab === 'rank' && <RankView studentId={selectedChildId} semester={semester} />}
+
+      {subTab !== 'rank' &&
+        (isLoading ? (
+          <div className="py-16 text-center text-on-surface-variant text-sm">불러오는 중...</div>
+        ) : subTab === 'list' ? (
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-surface-container">
+              <h3 className="font-headline text-base font-semibold text-on-surface">성적 목록</h3>
+              {grades.length > 0 && (
+                <span className="text-sm text-on-surface-variant">
+                  평균 <span className="font-semibold text-primary">{avg}점</span>
+                </span>
+              )}
+            </div>
+            <GradeTable grades={grades} mode="read" />
+          </div>
+        ) : (
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container p-8">
+            <h3 className="font-headline text-base font-semibold text-on-surface mb-6">성적 시각화</h3>
+            {radarData.length === 0 ? (
+              <p className="text-center text-on-surface-variant text-sm py-16">등록된 성적이 없습니다.</p>
+            ) : (
+              <RadarChart data={radarData} />
             )}
           </div>
-          <GradeTable grades={grades} mode="read" />
-        </div>
-      ) : (
-        <div className="bg-surface-container-lowest rounded-xl border border-surface-container p-8">
-          <h3 className="font-headline text-base font-semibold text-on-surface mb-6">성적 시각화</h3>
-          {radarData.length === 0 ? (
-            <p className="text-center text-on-surface-variant text-sm py-16">등록된 성적이 없습니다.</p>
-          ) : (
-            <RadarChart data={radarData} />
-          )}
-        </div>
-      )}
+        ))}
     </div>
   )
 }
