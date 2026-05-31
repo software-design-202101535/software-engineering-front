@@ -10,7 +10,6 @@ import { StudentsPage } from '@/pages/StudentsPage'
 import { GradesTabPage } from '@/pages/GradesTabPage'
 import { StudentGradesPage } from '@/pages/StudentGradesPage'
 import { ParentGradesPage } from '@/pages/ParentGradesPage'
-import { PlaceholderTabPage } from '@/pages/PlaceholderTabPage'
 import { InfoTabPage } from '@/pages/InfoTabPage'
 import { AttendanceTabPage } from '@/pages/AttendanceTabPage'
 import { RecordsTabPage } from '@/pages/RecordsTabPage'
@@ -57,7 +56,6 @@ export default function App() {
           {/* 학생 */}
           <Route element={<AppLayout />}>
             <Route path="/student/grades" element={<StudentGradesPage />} />
-            <Route path="/student/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/student/feedback" element={<StudentFeedbackPage />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
           </Route>
@@ -65,7 +63,6 @@ export default function App() {
           {/* 학부모 */}
           <Route element={<AppLayout />}>
             <Route path="/parent/grades" element={<ParentGradesPage />} />
-            <Route path="/parent/records" element={<PlaceholderTabPage tabName="학생부" />} />
             <Route path="/parent/feedback" element={<ParentFeedbackPage />} />
             <Route path="/parent/notifications" element={<NotificationsPage />} />
           </Route>

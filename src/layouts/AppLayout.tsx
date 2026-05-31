@@ -18,13 +18,11 @@ const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
   ],
   STUDENT: [
     { to: '/student/grades', label: '성적', icon: 'grade' },
-    { to: '/student/records', label: '학생부', icon: 'description' },
     { to: '/student/feedback', label: '피드백', icon: 'feedback' },
     { to: '/student/notifications', label: '알림', icon: 'notifications' },
   ],
   PARENT: [
     { to: '/parent/grades', label: '성적', icon: 'grade' },
-    { to: '/parent/records', label: '학생부', icon: 'description' },
     { to: '/parent/feedback', label: '피드백', icon: 'feedback' },
     { to: '/parent/notifications', label: '알림', icon: 'notifications' },
   ],
