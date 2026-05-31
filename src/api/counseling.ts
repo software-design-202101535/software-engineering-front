@@ -1,4 +1,4 @@
-import type { Counseling, CounselingRequest } from '@/types'
+import type { Counseling, CounselingRequest, SharedCounseling } from '@/types'
 import { client } from './client'
 
 export async function fetchCounselings(
@@ -8,6 +8,17 @@ export async function fetchCounselings(
   const { data } = await client.get<Counseling[]>(`/api/students/${studentId}/counselings`, {
     params,
   })
+  return data
+}
+
+export async function fetchSharedCounselings(params: {
+  year: number
+  month?: number
+  grade?: number
+  classNum?: number
+  name?: string
+}): Promise<SharedCounseling[]> {
+  const { data } = await client.get<SharedCounseling[]>('/api/counselings/shared', { params })
   return data
 }
 

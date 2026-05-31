@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/features/auth'
 import { useClassStudents } from '@/features/students'
 import type { StudentSummary } from '@/types'
 
@@ -32,7 +31,6 @@ function StudentCard({ student, onClick }: { student: StudentSummary; onClick: (
 
 export function StudentsPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const { data: students = [], isLoading } = useClassStudents()
 
@@ -48,9 +46,7 @@ export function StudentsPage() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="font-headline text-2xl font-bold text-on-surface">학생 관리</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          {user?.grade}학년 {user?.classNum}반 · {students.length}명
-        </p>
+        <p className="text-sm text-on-surface-variant mt-1">학생 {students.length}명</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

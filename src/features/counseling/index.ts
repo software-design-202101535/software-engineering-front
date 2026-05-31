@@ -1,3 +1,8 @@
 export { useCounselingPage } from './hooks/useCounselingPage'
+export { useSharedCounselings } from './hooks/useSharedCounselings'
+export { useSharedCounselingPage } from './hooks/useSharedCounselingPage'
+export { groupCounselingsByClass, type ClassGroup } from './utils/groupCounselingsByClass'
 export { CounselingModal } from './components/CounselingModal'
 export { CounselingCard } from './components/CounselingCard'
+export { ClassGroupNav } from './components/ClassGroupNav'
+export { SharedCounselingList } from './components/SharedCounselingList'
