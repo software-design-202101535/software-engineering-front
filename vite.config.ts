@@ -14,6 +14,8 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     globals: true,
     passWithNoTests: true,
+    // 단위 테스트는 src 안에만. e2e(Playwright)의 *.spec.ts는 vitest가 수집하지 않게 제외.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     env: {
       VITE_API_BASE_URL: 'http://test-api',
     },
