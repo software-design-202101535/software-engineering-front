@@ -46,6 +46,19 @@ export default tseslint.config(
     },
   },
 
+  // Playwright E2E + 설정 파일: node globals, console 허용.
+  // Playwright fixture의 `use` 인자가 React Hook으로 오인되므로 rules-of-hooks 비활성.
+  {
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: {
+      'no-console': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+
   // Service Worker (public/firebase-messaging-sw.js 등)
   {
     files: ['public/**/*.js'],
