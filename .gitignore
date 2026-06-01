@@ -28,6 +28,13 @@ dist-ssr
 .env.local
 .env.production
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+.last-run.json
+
 API_SPEC.md
 CLAUDE.md
 .claude

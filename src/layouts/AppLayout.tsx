@@ -15,6 +15,7 @@ const NAV_ITEMS: Partial<Record<UserRole, NavItem[]>> = {
   TEACHER: [
     { to: '/students', label: '학생 관리', icon: 'group' },
     { to: '/shared-counseling', label: '공유 상담', icon: 'forum' },
+    { to: '/analytics', label: '통계', icon: 'bar_chart' },
   ],
   STUDENT: [
     { to: '/student/grades', label: '성적', icon: 'grade' },
