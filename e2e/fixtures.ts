@@ -36,6 +36,20 @@ const USERS: Record<RoleKey, User> = {
   admin: { id: 5, email: 'admin@test.com', name: '관리자', role: 'ADMIN' },
 }
 
+/**
+ * 실제 API 호출(/api/로 시작하는 pathname)만 매칭하는 fallback 목.
+ *
+ * 주의: 글롭 `**​/api/**`는 Vite dev가 서빙하는 앱 모듈 `/src/api/*.ts`까지
+ * 매칭해 앱을 깨뜨린다. pathname.startsWith('/api/') predicate로 그것을 피한다.
+ * page.route는 LIFO라 이걸 먼저 깔고 구체 목을 나중에 등록하면 구체 목이 우선한다.
+ */
+export async function mockApiFallback(page: Page, body: unknown = []): Promise<void> {
+  await page.route(
+    (url) => url.pathname.startsWith('/api/'),
+    (route) => json(route, body),
+  )
+}
+
 /** JSON 200 응답 헬퍼. */
 export async function json(route: Route, body: unknown, status = 200): Promise<void> {
   await route.fulfill({
