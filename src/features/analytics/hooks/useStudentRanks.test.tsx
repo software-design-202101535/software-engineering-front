@@ -39,7 +39,7 @@ describe('useStudentRanks', () => {
     )
     const { result } = renderHook(() => useStudentRanks(12, '2025-1'), { wrapper: makeWrapper() })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data?.class?.overall.rank).toBe(3)
+    expect(result.current.data?.class?.overall?.rank).toBe(3)
   })
 
   it('semester를 쿼리 파라미터로 전달한다', async () => {

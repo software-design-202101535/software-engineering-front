@@ -6,7 +6,8 @@ import type { RankDetail, RankScope, StudentRanks, SubjectCode, SubjectRank, Gra
  * 탭 전환 후 RankView 렌더, 부분/전체 null 분기 메시지, 과목 비대칭 머지 시 "-".
  */
 
-const overall = (rank: number): RankDetail => ({ rank, totalCount: 28, percentile: 7, avgScore: 90 })
+// 백엔드 percentile은 백분위(자기보다 아래 비율, 높을수록 상위). 화면은 100-percentile을 "상위 X%"로 보여준다.
+const overall = (rank: number): RankDetail => ({ rank, totalCount: 28, percentile: 90, avgScore: 90 })
 
 const subjectRank = (subject: SubjectCode, rank: number, gradeLevel: GradeLevel): SubjectRank => ({
   subject,
@@ -47,10 +48,27 @@ test('석차 탭: 종합 카드 2개와 과목별 석차 테이블을 보여준�
   await expect(page.getByText('반 석차 (종합)')).toBeVisible()
   await expect(page.getByText('전교 석차 (종합)')).toBeVisible()
   await expect(page.getByRole('heading', { name: '과목별 석차' })).toBeVisible()
-  await expect(page.getByText('상위 7%').first()).toBeVisible()
+  // 백엔드 percentile 90(백분위) → 화면은 상위 10%.
+  await expect(page.getByText('상위 10%').first()).toBeVisible()
   // 과목 행.
   await expect(page.getByRole('row', { name: /국어/ })).toBeVisible()
   await expect(page.getByRole('row', { name: /수학/ })).toBeVisible()
+})
+
+test('상위%는 백엔드 percentile(백분위)의 보수로 표시한다 (27/30 → 상위 90%)', async ({ page, auth }) => {
+  await auth.loginAs('student')
+  await gotoRankTab(
+    page,
+    ranks({
+      class: { overall: { rank: 27, totalCount: 30, percentile: 10, avgScore: 70 }, subjects: [] },
+      grade: null,
+    }),
+  )
+
+  await expect(page.getByText('반 석차 (종합)')).toBeVisible()
+  await expect(page.getByText('상위 90%')).toBeVisible()
+  // 백분위 10을 그대로 "상위 10%"로 잘못 표기하면 안 된다.
+  await expect(page.getByText('상위 10%')).toHaveCount(0)
 })
 
 test('한쪽 집계만 있으면 다른 카드는 "집계 준비 중"', async ({ page, auth }) => {

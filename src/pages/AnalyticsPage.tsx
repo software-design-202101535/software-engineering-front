@@ -6,6 +6,7 @@ import {
   GradeDistributionDonut,
   SubjectSummaryTable,
   AnalyticsEmpty,
+  formatAggregatedAt,
 } from '@/features/analytics'
 import type { SchoolType, SubjectCode } from '@/types'
 import { SCHOOLS } from '@/types'
@@ -77,6 +78,7 @@ export function AnalyticsPage() {
   const subjects = data?.subjects ?? []
   const activeSummary =
     subjects.find((s) => s.subject === selectedSubject) ?? subjects[0]
+  const aggregatedAt = formatAggregatedAt(data?.updatedAt)
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -85,9 +87,9 @@ export function AnalyticsPage() {
           <h1 className="font-headline text-2xl font-bold text-on-surface">반 성적 통계</h1>
           <p className="text-sm text-on-surface-variant mt-1">반·학년의 과목별 평균과 등급 분포를 확인합니다.</p>
         </div>
-        {data && (
+        {aggregatedAt && (
           <span className="text-xs text-on-surface-variant mt-2">
-            집계: {data.updatedAt.slice(0, 16).replace('T', ' ')}
+            집계: {aggregatedAt}
           </span>
         )}
       </div>

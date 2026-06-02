@@ -97,3 +97,20 @@ test('빈 응답이면 "집계 준비 중" placeholder를 보여준다', async (
   await expect(page.getByText('집계 준비 중입니다.')).toBeVisible()
   await expect(page.locator('.recharts-bar-rectangle')).toHaveCount(0)
 })
+
+// 집계 전이면 백엔드가 updatedAt:null을 준다(명세). 헤더가 null.slice()로 크래시(흰 화면)하면 안 된다.
+test('updatedAt이 null이어도 흰 화면 없이 placeholder를 보여준다', async ({ page, auth }) => {
+  await auth.loginAs('teacher')
+  const errors: string[] = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  await page.route('**/api/analytics/class-summary**', (route) =>
+    json(route, summary({ subjects: [], updatedAt: null })),
+  )
+
+  await page.goto('/analytics')
+
+  await expect(page.getByRole('heading', { name: '반 성적 통계' })).toBeVisible()
+  await expect(page.getByText('집계 준비 중입니다.')).toBeVisible()
+  await expect(page.getByText(/^집계:/)).toHaveCount(0)
+  expect(errors).toEqual([])
+})

@@ -3,6 +3,8 @@ import type { RankDetail, SubjectRank, SubjectCode } from '@/types'
 import { SUBJECT_LABEL } from '@/types'
 import { GRADE_COLORS } from '../constants'
 import { mergeSubjectRanks } from '../utils/mergeSubjectRanks'
+import { formatAggregatedAt } from '../utils/formatAggregatedAt'
+import { topPercent } from '../utils/topPercent'
 import { AnalyticsEmpty } from './AnalyticsEmpty'
 
 interface RankViewProps {
@@ -10,7 +12,7 @@ interface RankViewProps {
   semester: string
 }
 
-function RankSummaryCard({ title, detail }: { title: string; detail: RankDetail | undefined }) {
+function RankSummaryCard({ title, detail }: { title: string; detail: RankDetail | null | undefined }) {
   return (
     <div className="flex-1 bg-surface-container-low rounded-xl p-5">
       <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">{title}</p>
@@ -21,7 +23,7 @@ function RankSummaryCard({ title, detail }: { title: string; detail: RankDetail 
             <span className="text-base text-on-surface-variant"> / {detail.totalCount}등</span>
           </p>
           <div className="flex items-center gap-3 mt-2 text-sm text-on-surface-variant">
-            <span>상위 {detail.percentile}%</span>
+            <span>상위 {topPercent(detail.percentile)}%</span>
             <span className="text-outline-variant">·</span>
             <span>평균 {detail.avgScore}점</span>
           </div>
@@ -54,6 +56,7 @@ export function RankView({ studentId, semester }: RankViewProps) {
   }
 
   const merged = mergeSubjectRanks(data.class, data.grade)
+  const aggregatedAt = formatAggregatedAt(data.updatedAt)
   const gradeLevelOf = (subject: SubjectCode) =>
     data.class?.subjects.find((s) => s.subject === subject)?.gradeLevel ??
     data.grade?.subjects.find((s) => s.subject === subject)?.gradeLevel ??
@@ -108,9 +111,11 @@ export function RankView({ studentId, semester }: RankViewProps) {
         </div>
       </div>
 
-      <p className="text-xs text-on-surface-variant text-right">
-        집계: {data.updatedAt.slice(0, 16).replace('T', ' ')}
-      </p>
+      {aggregatedAt && (
+        <p className="text-xs text-on-surface-variant text-right">
+          집계: {aggregatedAt}
+        </p>
+      )}
     </div>
   )
 }

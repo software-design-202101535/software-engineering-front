@@ -322,7 +322,7 @@ export interface ClassSummary {
   grade: number
   classNum: number | null
   semester: string
-  updatedAt: string
+  updatedAt: string | null  // 집계 전이면 null
   subjects: SubjectSummary[]
 }
 
@@ -347,7 +347,7 @@ export interface SubjectRank extends RankDetail {
 }
 
 export interface RankScope {
-  overall: RankDetail
+  overall: RankDetail | null  // 종합 석차 row 없으면 null
   subjects: SubjectRank[]
 }
 
@@ -355,7 +355,7 @@ export interface RankScope {
 export interface StudentRanks {
   studentId: number
   semester: string
-  updatedAt: string
+  updatedAt: string | null  // 집계 전이면 null
   class: RankScope | null
   grade: RankScope | null
 }
