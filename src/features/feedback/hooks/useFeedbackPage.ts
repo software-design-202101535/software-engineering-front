@@ -37,6 +37,9 @@ export function useFeedbackPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
+  const currentYear = new Date().getFullYear()
+  const [year, setYear] = useState<number>(currentYear)
+  const [month, setMonth] = useState<number>(0) // 0 = 전체
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL')
   const [modalMode, setModalMode] = useState<ModalMode>({ type: 'closed' })
   const [deleteState, setDeleteState] = useState<DeleteState>({ type: 'idle' })
@@ -48,10 +51,12 @@ export function useFeedbackPage() {
     enabled: !!id,
   })
 
-  const feedbacks =
-    categoryFilter === 'ALL'
-      ? allFeedbacks
-      : allFeedbacks.filter((f) => f.category === categoryFilter)
+  const feedbacks = allFeedbacks.filter((f) => {
+    if (categoryFilter !== 'ALL' && f.category !== categoryFilter) return false
+    if (Number(f.date.slice(0, 4)) !== year) return false
+    if (month > 0 && Number(f.date.slice(5, 7)) !== month) return false
+    return true
+  })
 
   const createMutation = useMutation({
     mutationFn: (body: FeedbackRequest) => createFeedback(id, body),
@@ -148,6 +153,10 @@ export function useFeedbackPage() {
   return {
     feedbacks,
     isLoading,
+    year,
+    setYear,
+    month,
+    setMonth,
     categoryFilter,
     setCategoryFilter,
     modalMode,

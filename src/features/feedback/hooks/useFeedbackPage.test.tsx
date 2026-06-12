@@ -78,6 +78,64 @@ describe('categoryFilter', () => {
   })
 })
 
+describe('기간 필터 (year/month)', () => {
+  it('기본 year는 올해이고 month는 0(전체)이다', () => {
+    const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })
+    expect(result.current.year).toBe(new Date().getFullYear())
+    expect(result.current.month).toBe(0)
+  })
+
+  it('선택한 연도와 다른 연도의 피드백은 제외한다', async () => {
+    const lastYearFb: Feedback = { ...fakeFeedback, id: 12, date: '2025-01-15' }
+    server.use(
+      http.get(url('/api/students/1/feedbacks'), () =>
+        HttpResponse.json([fakeFeedback, lastYearFb]),
+      ),
+    )
+    const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.feedbacks).toHaveLength(1))
+    expect(result.current.feedbacks[0].id).toBe(10)
+    act(() => { result.current.setYear(2025) })
+    expect(result.current.feedbacks).toHaveLength(1)
+    expect(result.current.feedbacks[0].id).toBe(12)
+  })
+
+  it('month 선택 시 해당 월의 피드백만 반환한다', async () => {
+    const marchFb: Feedback = { ...fakeFeedback, id: 13, date: '2026-03-20' }
+    server.use(
+      http.get(url('/api/students/1/feedbacks'), () =>
+        HttpResponse.json([fakeFeedback, marchFb]),
+      ),
+    )
+    const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.feedbacks).toHaveLength(2))
+    act(() => { result.current.setMonth(3) })
+    expect(result.current.feedbacks).toHaveLength(1)
+    expect(result.current.feedbacks[0].id).toBe(13)
+  })
+
+  it('카테고리 필터와 기간 필터가 함께 적용된다', async () => {
+    const behaviorMarch: Feedback = {
+      ...fakeFeedback,
+      id: 14,
+      category: 'BEHAVIOR',
+      date: '2026-03-20',
+    }
+    const gradeMarch: Feedback = { ...fakeFeedback, id: 15, date: '2026-03-21' }
+    server.use(
+      http.get(url('/api/students/1/feedbacks'), () =>
+        HttpResponse.json([fakeFeedback, behaviorMarch, gradeMarch]),
+      ),
+    )
+    const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.feedbacks).toHaveLength(3))
+    act(() => { result.current.setMonth(3) })
+    act(() => { result.current.setCategoryFilter('BEHAVIOR') })
+    expect(result.current.feedbacks).toHaveLength(1)
+    expect(result.current.feedbacks[0].id).toBe(14)
+  })
+})
+
 describe('handleOpenAdd', () => {
   it('modalMode를 adding으로 변경한다', () => {
     const { result } = renderHook(() => useFeedbackPage(), { wrapper: makeWrapper() })

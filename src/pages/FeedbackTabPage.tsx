@@ -1,10 +1,20 @@
 import { useFeedbackPage, FeedbackModal, FeedbackCard } from '@/features/feedback'
 import { CATEGORY_FILTERS } from '@/features/feedback/constants'
 
+const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+const MONTHS = [
+  { value: 0, label: '전체' },
+  ...Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `${i + 1}월` })),
+]
+
 export function FeedbackTabPage() {
   const {
     feedbacks,
     isLoading,
+    year,
+    setYear,
+    month,
+    setMonth,
     categoryFilter,
     setCategoryFilter,
     modalMode,
@@ -43,10 +53,32 @@ export function FeedbackTabPage() {
             </button>
           ))}
         </div>
+        <select
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          className="ml-auto px-3 py-2 text-sm bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-primary"
+        >
+          {YEARS.map((y) => (
+            <option key={y} value={y}>
+              {y}년
+            </option>
+          ))}
+        </select>
+        <select
+          value={month}
+          onChange={(e) => setMonth(Number(e.target.value))}
+          className="px-3 py-2 text-sm bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-primary"
+        >
+          {MONTHS.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
         <button
           type="button"
           onClick={handleOpenAdd}
-          className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
           피드백 작성
