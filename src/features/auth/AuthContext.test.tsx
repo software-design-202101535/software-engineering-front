@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { server } from '@/test/mocks/server'
 import { AuthProvider, useAuth } from './AuthContext'
 import { setAccessToken, getAccessToken } from '@/api/client'
@@ -16,8 +17,29 @@ const baseLoginResponse = {
   role: 'TEACHER',
 }
 
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+}
+
 function wrapper({ children }: { children: ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>
+  return (
+    <QueryClientProvider client={makeQueryClient()}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
+  )
+}
+
+// 캐시 초기화 검증용: 외부에서 만든 client를 주입해 캐시 상태를 들여다본다.
+function wrapperWithClient(client: QueryClient) {
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={client}>
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
+    )
+  }
 }
 
 beforeEach(() => {
@@ -103,6 +125,16 @@ describe('login', () => {
       await result.current.login({ email: 'parent@test.com', password: 'pass' })
     })
     expect(result.current.user?.children).toEqual(children)
+  })
+
+  it('로그인 시 이전 사용자의 React Query 캐시를 비운다', async () => {
+    const client = makeQueryClient()
+    client.setQueryData(['counselings', 99], [{ id: 1 }])
+    const { result } = renderHook(() => useAuth(), { wrapper: wrapperWithClient(client) })
+    await act(async () => {
+      await result.current.login({ email: 'teacher@test.com', password: 'pass' })
+    })
+    expect(client.getQueryData(['counselings', 99])).toBeUndefined()
   })
 })
 
@@ -240,6 +272,26 @@ describe('logout', () => {
     expect(localStorage.getItem('user')).toBeNull()
     expect(result.current.user).toBeNull()
     expect(result.current.isAuthenticated).toBe(false)
+  })
+
+  it('로그아웃 시 React Query 캐시를 비운다', async () => {
+    server.use(
+      http.post(url('/api/auth/login/email'), () =>
+        HttpResponse.json(baseLoginResponse),
+      ),
+    )
+    const client = makeQueryClient()
+    const { result } = renderHook(() => useAuth(), { wrapper: wrapperWithClient(client) })
+    await act(async () => {
+      await result.current.login({ email: 'teacher@test.com', password: 'pass' })
+    })
+    client.setQueryData(['students'], [{ id: 1 }])
+
+    await act(async () => {
+      await result.current.logout()
+    })
+
+    expect(client.getQueryData(['students'])).toBeUndefined()
   })
 })
 

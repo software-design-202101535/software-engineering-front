@@ -30,15 +30,15 @@ function makeWrapper() {
   })
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <MemoryRouter initialEntries={['/students/1']}>
             <Routes>
               <Route path="/students/:studentId" element={<>{children}</>} />
             </Routes>
           </MemoryRouter>
-        </QueryClientProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     )
   }
 }

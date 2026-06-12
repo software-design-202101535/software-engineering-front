@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { server } from '@/test/mocks/server'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth'
@@ -16,10 +17,15 @@ vi.mock('react-router-dom', async () => {
 })
 
 function wrapper({ children }: { children: ReactNode }) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
   return (
-    <MemoryRouter>
-      <AuthProvider>{children}</AuthProvider>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <AuthProvider>{children}</AuthProvider>
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 

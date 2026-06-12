@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type {
   User,
   LoginRequest,
@@ -57,14 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   })
   const fcmTokenRef = useRef<string | null>(null)
+  const queryClient = useQueryClient()
 
   const applyLoginResponse = useCallback((res: LoginResponse) => {
     const user = userFromLoginResponse(res)
+    // 이전 사용자의 React Query 캐시를 제거. 안 하면 계정 전환 시 이전 교사 데이터가 보임.
+    queryClient.clear()
     setAccessToken(res.accessToken)
     localStorage.setItem('user', JSON.stringify(user))
     setState({ user, isAuthenticated: true })
     return user
-  }, [])
+  }, [queryClient])
 
   // 인증 상태가 true가 되면(로그인/새로고침) FCM 토큰 등록 시도. 실패는 swallow.
   useEffect(() => {
@@ -103,7 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null)
     localStorage.removeItem('user')
     setState({ user: null, isAuthenticated: false })
-  }, [])
+    queryClient.clear()
+  }, [queryClient])
 
   return (
     <AuthContext.Provider value={{ ...state, login, oauthLogin, oauthRegister, logout }}>
